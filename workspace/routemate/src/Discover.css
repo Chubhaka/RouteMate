@@ -1,0 +1,322 @@
+.discover-page { min-height: 100vh; }
+
+.discover-add-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(199,239,78,0.15);
+  border: 0.5px solid rgba(199,239,78,0.4);
+  color: var(--rm-lime);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+/* Map mock */
+.map-mock {
+  position: relative;
+  height: 160px;
+  background: #D8E8CC;
+  overflow: hidden;
+}
+
+.map-grid { position: absolute; inset: 0; }
+
+.map-grid-line-h {
+  position: absolute;
+  left: 0; right: 0;
+  height: 0.5px;
+  background: rgba(0,80,30,0.08);
+}
+
+.map-grid-line-v {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 0.5px;
+  background: rgba(0,80,30,0.08);
+}
+
+.map-route-line {
+  position: absolute;
+  top: 45%;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--rm-dark);
+  opacity: 0.3;
+  border-radius: 2px;
+}
+
+.map-pin {
+  position: absolute;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: flex; align-items: center; justify-content: center;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.map-pin--user  { background: var(--rm-dark);  }
+.map-pin--food  { background: #FEF3C7; border-color: #F59E0B; }
+.map-pin--safe  { background: #DCFCE7; border-color: #22C55E; }
+.map-pin--study { background: #EEEDFE; border-color: #7F77DD; }
+
+.map-label {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--rm-dark2);
+  background: rgba(255,255,255,0.85);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Categories */
+.category-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 12px 16px;
+  scrollbar-width: none;
+  background: var(--rm-card);
+  border-bottom: 0.5px solid var(--rm-border);
+}
+
+.category-scroll::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-surface);
+  color: var(--rm-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.cat-chip--active {
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  border-color: transparent;
+}
+
+.cat-count {
+  background: rgba(199,239,78,0.2);
+  color: var(--rm-dark2);
+  border-radius: 10px;
+  padding: 0 5px;
+  font-size: 10px;
+}
+
+.cat-chip--active .cat-count {
+  background: rgba(199,239,78,0.3);
+  color: var(--rm-lime);
+}
+
+/* Spots */
+.spots-list {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spot-card {
+  background: var(--rm-card);
+  border-radius: 14px;
+  border: 0.5px solid var(--rm-border);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.spot-card__icon {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.spot-card__body { flex: 1; min-width: 0; }
+
+.spot-card__top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 3px;
+}
+
+.spot-card__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rm-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spot-verified {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #065F46;
+  background: #DCFCE7;
+  padding: 2px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.spot-card__sub {
+  font-size: 12px;
+  color: var(--rm-muted);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.spot-card__bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spot-card__dist,
+.spot-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--rm-muted);
+}
+
+.spot-card__rating { color: #B45309; }
+
+.spot-save-btn {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-surface);
+  color: var(--rm-muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.spot-save-btn:hover { border-color: var(--rm-dark2); }
+
+.spot-save-btn--saved {
+  background: #FEF3C7;
+  color: #B45309;
+  border-color: #F59E0B;
+}
+
+/* Empty */
+.spots-empty {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.spots-empty p { font-size: 14px; color: var(--rm-muted); }
+
+.spots-empty-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* CTA */
+.discover-cta {
+  padding: 8px 16px 24px;
+}
+
+.discover-cta-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 13px;
+  border-radius: 12px;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.discover-cta-btn:hover { opacity: 0.9; }
+
+/* ── Map section additions ──────────────────────────────────────── */
+.map-section {
+  position: relative;
+}
+
+.map-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #d8e8cc;
+  font-size: 13px;
+  color: #085420;
+  font-weight: 500;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.map-geo-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6B7280;
+  background: #FFFBEB;
+  border-top: 0.5px solid #F59E0B30;
+  padding: 6px 14px;
+}
+
+.map-locate-btn {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0.5px solid rgba(0,0,0,0.12);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #003310;
+  cursor: pointer;
+  z-index: 999;
+  transition: background 0.15s;
+}
+
+.map-locate-btn:hover { background: #f5f5f5; }

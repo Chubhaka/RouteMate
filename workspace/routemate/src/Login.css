@@ -1,0 +1,290 @@
+.login-page {
+  min-height: 100vh;
+  background: var(--rm-dark);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.login-header {
+  padding: 52px 24px 32px;
+  display: flex;
+  align-items: center;
+}
+
+.login-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--rm-lime);
+  letter-spacing: -0.02em;
+}
+
+/* ── Card ────────────────────────────────────────────────────────── */
+.login-card {
+  flex: 1;
+  background: var(--rm-surface);
+  border-radius: 28px 28px 0 0;
+  padding: 28px 24px 40px;
+  overflow-y: auto;
+}
+
+/* ── View transitions ────────────────────────────────────────────── */
+.auth-view { display: flex; flex-direction: column; }
+
+.fade-in {
+  animation: fadeIn 0.22s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ── Headings ────────────────────────────────────────────────────── */
+.auth-heading {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--rm-dark);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.auth-sub {
+  font-size: 14px;
+  color: var(--rm-muted);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* ── Social buttons ──────────────────────────────────────────────── */
+.social-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 0;
+  border-radius: 12px;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-card);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rm-text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.social-btn:hover {
+  border-color: var(--rm-dark2);
+  background: #F9F9F9;
+}
+
+.social-btn__logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--rm-dark);
+}
+
+/* ── Divider ─────────────────────────────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 0.5px;
+  background: var(--rm-border);
+}
+
+.divider span {
+  font-size: 12px;
+  color: var(--rm-muted);
+  white-space: nowrap;
+}
+
+/* ── Input fields ────────────────────────────────────────────────── */
+.lf-field {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.lf-field__icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rm-muted);
+  pointer-events: none;
+}
+
+/* for emoji icons */
+.lf-field__icon--text {
+  font-size: 14px;
+  top: 14px;
+  transform: none;
+}
+
+.lf-field__input {
+  width: 100%;
+  padding: 13px 44px;
+  border-radius: 12px;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-card);
+  font-size: 14px;
+  color: var(--rm-text);
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+
+.lf-field__input:focus {
+  border-color: var(--rm-dark2);
+}
+
+.lf-field__input::placeholder {
+  color: #B0B8BF;
+}
+
+.lf-field--error .lf-field__input {
+  border-color: var(--rm-red);
+  background: #FFF8F8;
+}
+
+.lf-field__eye {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rm-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.lf-field__err {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--rm-red);
+  margin-top: 5px;
+  padding-left: 2px;
+}
+
+/* ── Auth error banner ───────────────────────────────────────────── */
+.auth-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FEE2E2;
+  color: #B91C1C;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+/* ── Forgot link ─────────────────────────────────────────────────── */
+.auth-forgot {
+  display: block;
+  margin: 2px 0 16px auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rm-dark2);
+  cursor: pointer;
+  text-align: right;
+}
+
+.auth-forgot:hover { text-decoration: underline; }
+
+/* ── Submit button ───────────────────────────────────────────────── */
+.auth-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.01em;
+}
+
+.auth-submit:hover  { opacity: 0.9; }
+.auth-submit:active { transform: scale(0.98); }
+
+.auth-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Switch row ──────────────────────────────────────────────────── */
+.auth-switch {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--rm-muted);
+}
+
+.auth-switch__link {
+  color: var(--rm-dark2);
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.auth-switch__link:hover { text-decoration: underline; }
+
+/* ── Back button ─────────────────────────────────────────────────── */
+.back-btn {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rm-dark2);
+  margin-bottom: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.back-btn:hover { text-decoration: underline; }
+
+/* ── Sent confirmation ───────────────────────────────────────────── */
+.sent-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 30px 10px;
+  text-align: center;
+}
+
+.sent-confirm__icon { font-size: 40px; }
+
+.sent-confirm__text {
+  font-size: 14px;
+  color: var(--rm-text);
+  line-height: 1.55;
+}

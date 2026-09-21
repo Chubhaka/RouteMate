@@ -1,0 +1,502 @@
+/* ─── Safety Hub Page ─────────────────────────────────────────── */
+
+.safety-page {
+  min-height: 100vh;
+  background: var(--rm-surface);
+}
+
+/* ─── Tab strip ───────────────────────────────────────────────── */
+
+.safety-tabs {
+  display: flex;
+  background: var(--rm-dark);
+  padding: 0 16px 14px;
+  gap: 6px;
+}
+
+.safety-tab {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.safety-tab:hover {
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.safety-tab--active {
+  background: var(--rm-lime);
+  color: var(--rm-dark);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* ─── Body wrapper ────────────────────────────────────────────── */
+
+.safety-body {
+  padding: 16px;
+}
+
+/* ─── Fade-in animation ───────────────────────────────────────── */
+
+.fade-in {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ─── Intro paragraph ─────────────────────────────────────────── */
+
+.safety-intro {
+  font-size: 13px;
+  color: var(--rm-muted);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+/* ─── Alert cards ─────────────────────────────────────────────── */
+
+.safety-alert {
+  border-radius: 14px;
+  border: 0.5px solid transparent;
+  padding: 13px 14px;
+  margin-bottom: 10px;
+  transition: transform 0.1s ease;
+}
+
+.safety-alert:active { transform: scale(0.99); }
+
+/* severity colours */
+.safety-alert--danger {
+  background: #FFF5F5;
+  border-color: rgba(239, 68, 68, 0.25);
+  border-left: 3px solid #EF4444;
+}
+
+.safety-alert--warning {
+  background: #FFFBEB;
+  border-color: rgba(245, 158, 11, 0.25);
+  border-left: 3px solid #F59E0B;
+}
+
+.safety-alert--success {
+  background: #F0FDF4;
+  border-color: rgba(34, 197, 94, 0.25);
+  border-left: 3px solid #22C55E;
+}
+
+/* Alert inner header row */
+.safety-alert__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+/* Coloured icon circle */
+.safety-alert__icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.safety-alert--danger  .safety-alert__icon-wrap { background: #FEE2E2; color: #B91C1C; }
+.safety-alert--warning .safety-alert__icon-wrap { background: #FEF3C7; color: #B45309; }
+.safety-alert--success .safety-alert__icon-wrap { background: #DCFCE7; color: #15803D; }
+
+.safety-alert__titles { flex: 1; }
+
+.safety-alert__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rm-text);
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.safety-alert__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--rm-muted);
+}
+
+.safety-alert__detail {
+  font-size: 12px;
+  color: #374151;
+  line-height: 1.55;
+  padding-left: 42px; /* aligns under title, past the icon */
+}
+
+/* Dismiss X button */
+.safety-alert__dismiss {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rm-muted);
+  background: rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.safety-alert__dismiss:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--rm-text);
+}
+
+/* ─── All-clear state ─────────────────────────────────────────── */
+
+.safety-clear {
+  text-align: center;
+  padding: 40px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.safety-clear p {
+  font-size: 14px;
+  color: var(--rm-muted);
+}
+
+/* ─── Report button ───────────────────────────────────────────── */
+
+.report-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  margin-top: 6px;
+  border-radius: 12px;
+  background: #EF4444;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.report-btn:hover  { opacity: 0.9; }
+.report-btn:active { transform: scale(0.98); }
+
+/* ─── Emergency contact cards ─────────────────────────────────── */
+
+.emergency-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--rm-card);
+  border: 0.5px solid var(--rm-border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.emergency-card:hover  { border-color: var(--rm-dark2); }
+.emergency-card:active { transform: scale(0.98); }
+
+.emergency-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emergency-card__info { flex: 1; }
+
+.emergency-card__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rm-text);
+  margin-bottom: 3px;
+}
+
+.emergency-card__number {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rm-dark);
+  letter-spacing: 0.02em;
+}
+
+/* ─── Safety tips ─────────────────────────────────────────────── */
+
+.tip-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--rm-card);
+  border: 0.5px solid var(--rm-border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 8px;
+}
+
+.tip-card__num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.tip-card__text {
+  font-size: 13px;
+  color: var(--rm-text);
+  line-height: 1.55;
+}
+
+.add-tip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 13px;
+  margin-top: 4px;
+  border-radius: 12px;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.add-tip-btn:hover { opacity: 0.9; }
+
+/* ─── Report modal ────────────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  padding: 0 0 var(--nav-h);
+  animation: backdropIn 0.2s ease;
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 430px;
+  padding: 20px 20px 28px;
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0);    }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--rm-text);
+}
+
+.modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rm-surface);
+  color: var(--rm-muted);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.modal-close:hover { background: var(--rm-border); }
+
+/* Step layout */
+.modal-step { display: flex; flex-direction: column; gap: 0; }
+
+.modal-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rm-muted);
+  margin-bottom: 10px;
+}
+
+/* Report type buttons grid */
+.report-types {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.report-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rm-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.report-type-btn:hover {
+  border-color: var(--rm-dark2);
+  color: var(--rm-dark);
+}
+
+.report-type-btn--sel {
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  border-color: transparent;
+}
+
+/* Modal inputs */
+.modal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--rm-surface);
+  border: 0.5px solid var(--rm-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.modal-input {
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--rm-text);
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+}
+
+.modal-input::placeholder { color: var(--rm-muted); }
+
+.modal-textarea {
+  width: 100%;
+  border: 0.5px solid var(--rm-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--rm-text);
+  background: var(--rm-surface);
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.modal-textarea:focus { border-color: var(--rm-dark2); }
+
+.modal-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--rm-muted);
+  line-height: 1.5;
+  margin-bottom: 18px;
+  padding: 8px 10px;
+  background: var(--rm-surface);
+  border-radius: 8px;
+}
+
+/* Next / submit button */
+.modal-next {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.modal-next:hover  { opacity: 0.9; }
+.modal-next:active { transform: scale(0.98); }
+
+.modal-next:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Success state */
+.modal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 0 8px;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-success__text {
+  font-size: 14px;
+  color: var(--rm-text);
+  text-align: center;
+  line-height: 1.5;
+  max-width: 260px;
+}

@@ -1,0 +1,573 @@
+.onboarding {
+  min-height: 100vh;
+  background: var(--rm-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Top bar ────────────────────────────────────────────────────── */
+.ob-topbar {
+  background: var(--rm-dark);
+  padding: 20px 20px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ob-topbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--rm-lime);
+  letter-spacing: -0.01em;
+}
+
+.ob-topbar__skip {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+.ob-topbar__skip:hover { color: rgba(255,255,255,0.7); }
+
+/* ── Progress bar ────────────────────────────────────────────────── */
+.ob-progress {
+  display: flex;
+  gap: 4px;
+  padding: 0 20px;
+  background: var(--rm-dark);
+  padding-bottom: 14px;
+}
+
+.ob-progress__seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.12);
+  transition: background 0.3s ease;
+}
+
+.ob-progress__seg--done   { background: var(--rm-lime); }
+.ob-progress__seg--active { background: rgba(199,239,78,0.5); }
+
+/* ── Body ────────────────────────────────────────────────────────── */
+.ob-body {
+  flex: 1;
+  padding: 24px 20px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ob-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.fade-in {
+  animation: fadeIn 0.22s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ── Step header ────────────────────────────────────────────────── */
+.ob-step__header { margin-bottom: 22px; }
+
+.ob-step__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--rm-dark);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 7px;
+}
+
+.ob-step__sub {
+  font-size: 14px;
+  color: var(--rm-muted);
+  line-height: 1.5;
+}
+
+/* ── Nav row ─────────────────────────────────────────────────────── */
+.ob-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.ob-nav__back {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-card);
+  color: var(--rm-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.ob-nav__back:hover { border-color: var(--rm-dark2); }
+
+.ob-nav__next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 14px;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.ob-nav__next:hover  { opacity: 0.9; }
+.ob-nav__next:active { transform: scale(0.98); }
+
+.ob-nav__next:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Primary button (standalone) ────────────────────────────────── */
+.ob-primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px 28px;
+  border-radius: 14px;
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  align-self: stretch;
+  margin-top: auto;
+}
+
+.ob-primary-btn--wide { width: 100%; }
+
+.ob-primary-btn:hover  { opacity: 0.9; }
+.ob-primary-btn:active { transform: scale(0.98); }
+.ob-primary-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   STEP 1 — Welcome
+══════════════════════════════════════════════════════════════════════ */
+.ob-welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+  padding-top: 16px;
+}
+
+.ob-welcome__icon {
+  margin-bottom: 20px;
+  animation: pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes pop {
+  from { transform: scale(0.6); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.ob-welcome__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--rm-dark);
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.ob-welcome__body {
+  font-size: 15px;
+  color: var(--rm-muted);
+  line-height: 1.6;
+  max-width: 300px;
+  margin-bottom: 28px;
+}
+
+.ob-welcome__points {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.ob-welcome__point {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--rm-card);
+  border: 0.5px solid var(--rm-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--rm-text);
+  font-weight: 500;
+}
+
+.ob-welcome__point-icon { font-size: 20px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   STEP 2 — Transport
+══════════════════════════════════════════════════════════════════════ */
+.transport-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.transport-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 12px;
+  border-radius: 16px;
+  border: 1.5px solid var(--rm-border);
+  background: var(--rm-card);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.transport-card:hover { border-color: var(--rm-dark2); }
+
+.transport-card--sel {
+  border-color: var(--rm-dark);
+  background: #F5FAF0;
+}
+
+.transport-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.transport-card__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rm-text);
+  text-align: center;
+}
+
+.transport-card__check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--rm-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STEP 3 — Route
+══════════════════════════════════════════════════════════════════════ */
+.route-form { display: flex; flex-direction: column; margin-bottom: 8px; }
+
+.route-form__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rm-muted);
+  margin-bottom: 6px;
+}
+
+.route-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--rm-card);
+  border: 0.5px solid var(--rm-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: border-color 0.15s;
+}
+
+.route-input-wrap:focus-within { border-color: var(--rm-dark2); }
+
+.route-input-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.route-input-dot--from { background: var(--rm-dark); }
+.route-input-dot--to   { background: var(--rm-lime); border: 2px solid var(--rm-dark2); }
+
+.route-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: var(--rm-text);
+  outline: none;
+  font-family: inherit;
+}
+
+.route-input::placeholder { color: #B0B8BF; }
+
+.route-input-icon { color: var(--rm-muted); flex-shrink: 0; }
+
+.route-form__connector {
+  width: 1.5px;
+  height: 18px;
+  background: var(--rm-border);
+  margin: 4px 0 10px 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STEP 4 — Commute time
+══════════════════════════════════════════════════════════════════════ */
+.time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.time-slot {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-card);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rm-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.time-slot:hover { border-color: var(--rm-dark2); color: var(--rm-dark); }
+
+.time-slot--sel {
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  border-color: transparent;
+}
+
+.ob-custom-time {
+  background: var(--rm-card);
+  border: 0.5px solid var(--rm-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.ob-custom-time__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rm-muted);
+  margin-bottom: 10px;
+}
+
+.ob-custom-time__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ob-time-input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0.5px solid var(--rm-border);
+  font-size: 14px;
+  color: var(--rm-text);
+  outline: none;
+  font-family: inherit;
+  background: var(--rm-surface);
+}
+
+.ob-time-input:focus { border-color: var(--rm-dark2); }
+
+.ob-time-sep {
+  font-size: 12px;
+  color: var(--rm-muted);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STEP 5 — Interests
+══════════════════════════════════════════════════════════════════════ */
+.interests-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.interest-chip {
+  padding: 9px 16px;
+  border-radius: 20px;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-card);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rm-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.interest-chip:hover { border-color: var(--rm-dark2); color: var(--rm-dark); }
+
+.interest-chip--sel {
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  border-color: transparent;
+}
+
+.interests-count {
+  font-size: 12px;
+  color: var(--rm-muted);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STEP 6 — Suggested pods
+══════════════════════════════════════════════════════════════════════ */
+.suggested-pods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.suggested-pod {
+  background: var(--rm-card);
+  border-radius: 14px;
+  border: 1.5px solid var(--rm-border);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.suggested-pod--joined { border-color: var(--rm-lime); }
+
+.suggested-pod__head {
+  background: var(--rm-dark);
+  padding: 11px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.suggested-pod__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rm-lime);
+}
+
+.suggested-pod__meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+
+.suggested-pod__match {
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(199,239,78,0.2);
+  color: var(--rm-lime);
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.suggested-pod__foot {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.suggested-pod__members {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--rm-muted);
+}
+
+.suggested-pod__btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 0.5px solid var(--rm-border);
+  background: var(--rm-surface);
+  color: var(--rm-dark);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.suggested-pod__btn:hover { border-color: var(--rm-dark2); }
+
+.suggested-pod__btn--joined {
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  border-color: transparent;
+}
+
+/* Finish row */
+.ob-finish-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.ob-skip-btn {
+  font-size: 13px;
+  color: var(--rm-muted);
+  text-align: center;
+  cursor: pointer;
+  padding: 8px;
+  transition: color 0.15s;
+}
+
+.ob-skip-btn:hover { color: var(--rm-dark); }

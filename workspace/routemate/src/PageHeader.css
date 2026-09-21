@@ -1,0 +1,26 @@
+.page-header {
+  background: var(--rm-dark);
+  padding: 20px 20px 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+ 
+.page-header__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--rm-lime);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+ 
+.page-header__sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 3px;
+}
+ 
+.page-header__action {
+  flex-shrink: 0;
+}
