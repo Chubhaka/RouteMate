@@ -195,9 +195,9 @@ export default function Home() {
                 </button>
                 <button
                   className="pod-btn pod-btn--primary"
-                  onClick={() => navigate('/feed')}
+                  onClick={() => navigate('/pods')}
                 >
-                  Open feed
+                  Open chat
                 </button>
               </div>
             </div>
