@@ -45,3 +45,4 @@ input, textarea {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--rm-border); border-radius: 2px; }
+

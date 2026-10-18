@@ -5,12 +5,13 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  height: var(--nav-h);
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  padding: 0 8px env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
   background: var(--rm-dark);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 8px;
   z-index: 100;
   border-top: 1px solid rgba(255,255,255,0.06);
 }
