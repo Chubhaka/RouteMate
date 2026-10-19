@@ -10,6 +10,8 @@ import Pods from './Pages/Pods';
 import LiveFeed from './Pages/LiveFeed';
 import Discover from './Pages/Discover';
 import Safety from './Pages/Safety';
+import CommuteInfo from './Pages/Commuteinfo';
+import Profile     from './Pages/Profile';
 
 import './App.css';
 
@@ -32,6 +34,8 @@ function Layout() {
           <Route path="/feed" element={<PrivateRoute><LiveFeed /></PrivateRoute>} />
           <Route path="/discover" element={<PrivateRoute><Discover /></PrivateRoute>} />
           <Route path="/safety" element={<PrivateRoute><Safety /></PrivateRoute>} />
+          <Route path="/commute"      element={<PrivateRoute><CommuteInfo /></PrivateRoute>} />
+          <Route path="/profile"      element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

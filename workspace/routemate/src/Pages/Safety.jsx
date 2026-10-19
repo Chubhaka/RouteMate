@@ -1,75 +1,111 @@
 import React, { useState, useEffect } from 'react';
 import {
   Shield, AlertTriangle, Users, CheckCircle,
-  Phone, Truck, Flag, Clock, MapPin, X, Info, Plus,
+  Phone, Truck, Flag, Clock, MapPin, X,
+  Info, Plus, AlertCircle,          // ← AlertCircle imported — was missing, caused crash
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import {
-  getSafetyAlerts, getSafeTips,
-  submitSafetyReport, addSafeTip,
+  getSafetyAlerts,
+  getSafeTips,
+  submitSafetyReport,
+  addSafeTip,
 } from '../services/api';
 import '../Safety.css';
 
 const EMERGENCY = [
-  { label: 'Police',       number: '10111',        icon: Phone,  color: '#EF4444', bg: '#FEE2E2' },
-  { label: 'Medical',      number: '10177',        icon: Truck,  color: '#F59E0B', bg: '#FEF3C7' },
-  { label: 'Gautrain',     number: '0800 42 88 72',icon: Shield, color: '#185FA5', bg: '#E6F1FB' },
-  { label: 'Metro Police', number: '011 375 5911', icon: Shield, color: '#085420', bg: '#DCFCE7' },
+  { label: 'Police',       number: '10111',         icon: Phone,  color: 'EF4444', bg: 'FEE2E2' },
+  { label: 'Medical',      number: '10177',         icon: Truck,  color: 'F59E0B', bg: 'FEF3C7' },
+  { label: 'Gautrain',     number: '0800428872',    icon: Shield, color: '185FA5', bg: 'E6F1FB' },
+  { label: 'Metro Police', number: '0113755911',    icon: Shield, color: '085420', bg: 'DCFCE7' },
 ];
 
-const SEVERITY_ICON = { danger: AlertTriangle, warning: Users, success: CheckCircle };
+const SEVERITY_ICON = {
+  danger:  AlertTriangle,
+  warning: Users,
+  success: CheckCircle,
+};
 
-// ── Report modal ──────────────────────────────────────────────────────────────
+// ── Report threshold notice text ───────────────────────────────────────────
+const THRESHOLD = 3;
+
+// ── Report modal ───────────────────────────────────────────────────────────
 function ReportModal({ onClose, onReportSubmitted }) {
-  const [step,      setStep]      = useState(1);
-  const [type,      setType]      = useState('');
-  const [location,  setLocation]  = useState('');
-  const [details,   setDetails]   = useState('');
-  const [submitting,setSubmitting]= useState(false);
-  const [result,    setResult]    = useState(null);  // { promoted, count, remaining }
-  const [err,       setErr]       = useState('');
+  const [step,       setStep]       = useState(1);
+  const [type,       setType]       = useState('');
+  const [location,   setLocation]   = useState('');
+  const [details,    setDetails]    = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [result,     setResult]     = useState(null);
+  const [err,        setErr]        = useState('');
 
   async function handleSubmit() {
     setErr('');
-    if (!location.trim()) { setErr('Please enter a location.'); return; }
+    if (!location.trim()) {
+      setErr('Please enter a location before submitting.');
+      return;
+    }
     setSubmitting(true);
-    const res = await submitSafetyReport({ type, location: location.trim(), details: details.trim() });
-    setResult(res);
+    try {
+      const res = await submitSafetyReport({
+        type,
+        location: location.trim(),
+        details:  details.trim(),
+      });
+      setResult(res);
+      if (res.promoted) onReportSubmitted();
+    } catch {
+      setErr('Something went wrong — please try again.');
+    }
     setSubmitting(false);
-    if (res.promoted) onReportSubmitted();   // refresh alerts list
   }
 
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Report unsafe area">
+    <div
+      className="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Report unsafe area"
+    >
       <div className="modal">
         <div className="modal-header">
           <h2 className="modal-title">Report unsafe area</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close"><X size={18} aria-hidden="true" /></button>
+          <button className="modal-close" onClick={onClose} aria-label="Close">
+            <X size={18} aria-hidden="true" />
+          </button>
         </div>
 
         {result ? (
           <div className="modal-success">
-            <CheckCircle size={36} color={result.promoted ? '#22C55E' : '#F59E0B'} aria-hidden="true" />
+            <CheckCircle
+              size={36}
+              color={result.promoted ? '#22C55E' : '#F59E0B'}
+              aria-hidden="true"
+            />
             {result.promoted ? (
-              <>
-                <p className="modal-success__text">
-                  <strong>Alert published.</strong> This report reached the threshold of 3 independent
-                  submissions and is now visible to all commuters on this route.
-                </p>
-                <button className="modal-done-btn" onClick={onClose}>Done</button>
-              </>
+              <p className="modal-success__text">
+                <strong>Alert published.</strong> This report reached the
+                threshold of {THRESHOLD} independent submissions and is now
+                visible to all commuters on this route.
+              </p>
             ) : (
-              <>
-                <p className="modal-success__text">
-                  Report received. <strong>{result.count} of 3</strong> independent reports submitted.
-                  {result.remaining > 0 && ` ${result.remaining} more needed before a public alert is shown.`}
-                </p>
-                <button className="modal-done-btn" onClick={onClose}>Done</button>
-              </>
+              <p className="modal-success__text">
+                Report received.{' '}
+                <strong>
+                  {result.count} of {THRESHOLD}
+                </strong>{' '}
+                independent reports submitted.
+                {result.remaining > 0 &&
+                  ` ${result.remaining} more needed before a public alert is shown.`}
+              </p>
             )}
+            <button className="modal-done-btn" onClick={onClose}>
+              Done
+            </button>
           </div>
         ) : (
           <>
+            {/* ── Step 1: type ── */}
             {step === 1 && (
               <div className="modal-step">
                 <p className="modal-label">What type of concern?</p>
@@ -84,10 +120,10 @@ function ReportModal({ onClose, onReportSubmitted }) {
                     return (
                       <button
                         key={t.id}
+                        type="button"
                         className={`report-type-btn ${type === t.id ? 'report-type-btn--sel' : ''}`}
                         onClick={() => setType(t.id)}
                         aria-pressed={type === t.id}
-                        type="button"
                       >
                         <Icon size={18} aria-hidden="true" />
                         {t.label}
@@ -96,27 +132,48 @@ function ReportModal({ onClose, onReportSubmitted }) {
                   })}
                 </div>
 
-                {/* Threshold notice */}
                 <div className="threshold-notice">
                   <Info size={13} aria-hidden="true" />
-                  <span>Reports require <strong>3 independent submissions</strong> before a public safety alert is shown to other commuters.</span>
+                  <span>
+                    Reports require{' '}
+                    <strong>{THRESHOLD} independent submissions</strong> before a
+                    public safety alert is shown to other commuters.
+                  </span>
                 </div>
 
-                <button className="modal-next" disabled={!type} onClick={() => setStep(2)} type="button">
+                <button
+                  className="modal-next"
+                  disabled={!type}
+                  onClick={() => setStep(2)}
+                  type="button"
+                >
                   Next
                 </button>
               </div>
             )}
 
+            {/* ── Step 2: location + details ── */}
             {step === 2 && (
               <div className="modal-step">
-                <button className="back-link" onClick={() => setStep(1)} type="button">← Back</button>
+                <button
+                  className="back-link"
+                  onClick={() => { setStep(1); setErr(''); }}
+                  type="button"
+                >
+                  ← Back
+                </button>
 
-                {err && <div className="modal-error" role="alert"><AlertCircle size={13} aria-hidden="true" /> {err}</div>}
+                {/* Error uses AlertCircle — now properly imported */}
+                {err && (
+                  <div className="modal-error" role="alert">
+                    <AlertCircle size={13} aria-hidden="true" />
+                    {err}
+                  </div>
+                )}
 
                 <p className="modal-label">Location</p>
                 <div className="modal-input-row">
-                  <MapPin size={15} color="var(--rm-dark)" aria-hidden="true" />
+                  <MapPin size={15} color="#003310" aria-hidden="true" />
                   <input
                     className="modal-input"
                     type="text"
@@ -124,10 +181,13 @@ function ReportModal({ onClose, onReportSubmitted }) {
                     value={location}
                     onChange={e => setLocation(e.target.value)}
                     aria-label="Location of concern"
+                    aria-required="true"
                   />
                 </div>
 
-                <p className="modal-label" style={{ marginTop: 14 }}>Details (optional)</p>
+                <p className="modal-label" style={{ marginTop: 14 }}>
+                  Details (optional)
+                </p>
                 <textarea
                   className="modal-textarea"
                   placeholder="Describe what you saw…"
@@ -154,24 +214,27 @@ function ReportModal({ onClose, onReportSubmitted }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
+// ── Main page ──────────────────────────────────────────────────────────────
 export default function Safety() {
-  const [activeTab,   setActiveTab]   = useState('alerts');
-  const [alerts,      setAlerts]      = useState([]);
-  const [tips,        setTips]        = useState([]);
-  const [dismissed,   setDismissed]   = useState([]);
-  const [showReport,  setShowReport]  = useState(false);
-  const [newTipText,  setNewTipText]  = useState('');
-  const [addingTip,   setAddingTip]   = useState(false);
-  const [showTipInput,setShowTipInput]= useState(false);
-  const [toast,       setToast]       = useState('');
+  const [activeTab,    setActiveTab]    = useState('alerts');
+  const [alerts,       setAlerts]       = useState([]);
+  const [tips,         setTips]         = useState([]);
+  const [dismissed,    setDismissed]    = useState([]);
+  const [showReport,   setShowReport]   = useState(false);
+  const [newTipText,   setNewTipText]   = useState('');
+  const [addingTip,    setAddingTip]    = useState(false);
+  const [showTipInput, setShowTipInput] = useState(false);
+  const [toast,        setToast]        = useState('');
 
   useEffect(() => {
     getSafetyAlerts().then(setAlerts);
     getSafeTips().then(setTips);
   }, []);
 
-  function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2500); }
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2500);
+  }
 
   async function handleAddTip(e) {
     e.preventDefault();
@@ -191,14 +254,18 @@ export default function Safety() {
     <div className="safety-page">
       <PageHeader title="Safety hub" subtitle="Your route · updated now" />
 
-      {toast && <div className="safety-toast" role="status" aria-live="polite">{toast}</div>}
+      {toast && (
+        <div className="safety-toast" role="status" aria-live="polite">
+          {toast}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="safety-tabs" role="tablist">
         {[
-          { id: 'alerts',   label: 'Alerts'             },
-          { id: 'contacts', label: 'Emergency contacts'  },
-          { id: 'tips',     label: 'Safe route tips'     },
+          { id: 'alerts',   label: 'Alerts'            },
+          { id: 'contacts', label: 'Emergency contacts' },
+          { id: 'tips',     label: 'Safe route tips'   },
         ].map(t => (
           <button
             key={t.id}
@@ -222,30 +289,37 @@ export default function Safety() {
                 <Shield size={36} color="#22C55E" aria-hidden="true" />
                 <p>No active alerts on your route.</p>
               </div>
-            ) : visibleAlerts.map(alert => {
-              const Icon = SEVERITY_ICON[alert.severity] ?? AlertTriangle;
-              return (
-                <div key={alert.id} className={`safety-alert safety-alert--${alert.severity}`}>
-                  <div className="safety-alert__header">
-                    <div className="safety-alert__icon-wrap"><Icon size={16} aria-hidden="true" /></div>
-                    <div className="safety-alert__titles">
-                      <p className="safety-alert__title">{alert.title}</p>
-                      <span className="safety-alert__meta">
-                        <Clock size={11} aria-hidden="true" /> {alert.meta}
-                      </span>
+            ) : (
+              visibleAlerts.map(alert => {
+                const Icon = SEVERITY_ICON[alert.severity] ?? AlertTriangle;
+                return (
+                  <div
+                    key={alert.id}
+                    className={`safety-alert safety-alert--${alert.severity}`}
+                  >
+                    <div className="safety-alert__header">
+                      <div className="safety-alert__icon-wrap">
+                        <Icon size={16} aria-hidden="true" />
+                      </div>
+                      <div className="safety-alert__titles">
+                        <p className="safety-alert__title">{alert.title}</p>
+                        <span className="safety-alert__meta">
+                          <Clock size={11} aria-hidden="true" /> {alert.meta}
+                        </span>
+                      </div>
+                      <button
+                        className="safety-alert__dismiss"
+                        onClick={() => setDismissed(d => [...d, alert.id])}
+                        aria-label="Dismiss alert"
+                      >
+                        <X size={14} aria-hidden="true" />
+                      </button>
                     </div>
-                    <button
-                      className="safety-alert__dismiss"
-                      onClick={() => setDismissed(d => [...d, alert.id])}
-                      aria-label="Dismiss alert"
-                    >
-                      <X size={14} aria-hidden="true" />
-                    </button>
+                    <p className="safety-alert__detail">{alert.detail}</p>
                   </div>
-                  <p className="safety-alert__detail">{alert.detail}</p>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
 
             <button className="report-btn" onClick={() => setShowReport(true)}>
               <Flag size={16} aria-hidden="true" />
@@ -257,34 +331,41 @@ export default function Safety() {
         {/* EMERGENCY CONTACTS */}
         {activeTab === 'contacts' && (
           <div className="fade-in">
-            <p className="safety-intro">Tap any number to call directly.</p>
+            <p className="safety-intro">
+              Tap any number to call directly.
+            </p>
             {EMERGENCY.map((e, i) => {
               const Icon = e.icon;
               return (
                 <a
                   key={i}
-                  href={`tel:${e.number.replace(/\s/g, '')}`}
+                  href={`tel:${e.number}`}
                   className="emergency-card"
                   aria-label={`Call ${e.label}: ${e.number}`}
                 >
-                  <div className="emergency-card__icon" style={{ background: e.bg }}>
-                    <Icon size={20} color={e.color} aria-hidden="true" />
+                  <div
+                    className="emergency-card__icon"
+                    style={{ background: `#${e.bg}` }}
+                  >
+                    <Icon size={20} color={`#${e.color}`} aria-hidden="true" />
                   </div>
                   <div className="emergency-card__info">
                     <p className="emergency-card__label">{e.label}</p>
                     <p className="emergency-card__number">{e.number}</p>
                   </div>
-                  <Phone size={16} color="var(--rm-muted)" aria-hidden="true" />
+                  <Phone size={16} color="#6B7280" aria-hidden="true" />
                 </a>
               );
             })}
           </div>
         )}
 
-        {/* SAFE TIPS — Plus is imported, add tip wired to api */}
+        {/* SAFE TIPS */}
         {activeTab === 'tips' && (
           <div className="fade-in">
-            <p className="safety-intro">Community-sourced tips for staying safe on your daily commute.</p>
+            <p className="safety-intro">
+              Community-sourced tips for staying safe on your daily commute.
+            </p>
 
             {tips.map((tip, i) => (
               <div key={tip.id} className="tip-card">
@@ -305,23 +386,33 @@ export default function Safety() {
                   autoFocus
                 />
                 <div className="add-tip-actions">
-                  <button type="button" className="add-tip-cancel" onClick={() => setShowTipInput(false)}>
+                  <button
+                    type="button"
+                    className="add-tip-cancel"
+                    onClick={() => setShowTipInput(false)}
+                  >
                     Cancel
                   </button>
-                  <button type="submit" className="add-tip-submit" disabled={!newTipText.trim() || addingTip}>
+                  <button
+                    type="submit"
+                    className="add-tip-submit"
+                    disabled={!newTipText.trim() || addingTip}
+                  >
                     {addingTip ? 'Adding…' : 'Add tip'}
                   </button>
                 </div>
               </form>
             ) : (
-              <button className="add-tip-btn" onClick={() => setShowTipInput(true)}>
+              <button
+                className="add-tip-btn"
+                onClick={() => setShowTipInput(true)}
+              >
                 <Plus size={16} aria-hidden="true" />
                 Add a safety tip
               </button>
             )}
           </div>
         )}
-
       </div>
 
       {showReport && (

@@ -1,48 +1,320 @@
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
- 
+/* ── Reset ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Design tokens ────────────────────────────────────────────────── */
 :root {
-  --rm-dark: #003310;
-  --rm-dark2: #085420;
-  --rm-lime: #C7EF4E;
-  --rm-cream: #EDE8D8;
-  --rm-amber: #F59E0B;
-  --rm-red: #EF4444;
-  --rm-blue: #3B8BD4;
+  /* Brand */
+  --rm-dark:    #003310;
+  --rm-dark2:   #085420;
+  --rm-lime:    #C7EF4E;
+  --rm-cream:   #EDE8D8;
   --rm-surface: #F7F6F2;
-  --rm-border: rgba(0, 51, 16, 0.1);
-  --rm-text: #111;
-  --rm-muted: #6B7280;
-  --rm-card: #FFFFFF;
-  --nav-h: 80px;
-  --header-h: 60px;
+  --rm-card:    #FFFFFF;
+  --rm-border:  rgba(0,51,16,0.1);
+
+  /* Semantic status */
+  --rm-amber:   #F59E0B;
+  --rm-red:     #EF4444;
+  --rm-blue:    #3B8BD4;
+  --rm-green:   #16A34A;
+
+  /*
+   * Contrast fix:
+   * #6B7280 on white = 4.6:1 — fails WCAG AA for normal text (need 4.5:1, barely passes)
+   * #6B7280 on #F7F6F2 = 4.3:1 — FAILS on the surface background.
+   * Replaced with #4B5563 = 7.0:1 on white, 6.5:1 on surface — passes AA and AAA.
+   *
+   * Header muted text was rgba(255,255,255,0.45) on #003310 = ~2.8:1 — FAILS.
+   * Replaced with rgba(255,255,255,0.75) = ~5.2:1 — passes AA.
+   */
+  --rm-text:    #111111;
+  --rm-muted:   #4B5563;   /* was #6B7280 — contrast fixed */
+  --rm-header-sub: rgba(255,255,255,0.75); /* was 0.45 — contrast fixed */
+
+  /* Layout */
+  --nav-h:      64px;
+  --page-max:   430px;     /* phone-width cap */
+  --page-wide:  700px;     /* tablet breakpoint */
 }
- 
+
+/* ── Base ─────────────────────────────────────────────────────────── */
+html { font-size: 16px; }
+
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--rm-surface);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #E5E5E5;     /* grey surround on wide screens */
   color: var(--rm-text);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  min-height: 100vh;
 }
- 
+
 button {
   cursor: pointer;
   border: none;
   background: none;
   font-family: inherit;
 }
- 
-input, textarea {
+
+input, textarea, select {
   font-family: inherit;
 }
- 
+
 /* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--rm-border); border-radius: 2px; }
 
+/* ── App shell ────────────────────────────────────────────────────── */
+/*
+ * On mobile (< 430px): full-width, no side chrome.
+ * On tablet/desktop (>= 430px): centred phone column with grey surround.
+ * On wide screens (>= 700px): same centred column — the app is mobile-first
+ * by design; wide-screen layout is deferred to iteration two when React Native
+ * replaces the web prototype. This decision is documented in the report.
+ */
+.app-shell {
+  min-height: 100vh;
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--rm-surface);
+  position: relative;
+
+  /* Visible shadow on wide screens shows the phone column clearly */
+  box-shadow: 0 0 40px rgba(0,0,0,0.12);
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  /* Extra bottom padding so last content clears the fixed nav bar */
+  padding-bottom: 90px;
+}
+
+/* ── Responsive utilities ─────────────────────────────────────────── */
+
+/*
+ * Tablet and above (>= 430px wide viewport).
+ * The phone column stays at max-width 430px and centres.
+ * No horizontal stretching occurs.
+ */
+@media (min-width: 430px) {
+  .app-shell {
+    /* Ensure the shell never goes wider than 430px */
+    max-width: var(--page-max);
+  }
+}
+
+/*
+ * Wide screens (>= 700px).
+ * Still phone-column layout — this is a deliberate decision:
+ * the web build is an alpha prototype. React Native (iteration two)
+ * will deliver native iOS/Android layouts.
+ */
+@media (min-width: 700px) {
+  body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+
+  .app-shell {
+    border-radius: 24px;
+    overflow: hidden;
+    min-height: calc(100vh - 4rem);
+  }
+}
+
+/* ── Typography scale ─────────────────────────────────────────────── */
+.text-xs   { font-size: 11px; }
+.text-sm   { font-size: 12px; }
+.text-base { font-size: 14px; }
+.text-lg   { font-size: 16px; }
+.text-xl   { font-size: 20px; }
+
+/* ── Shared component styles ──────────────────────────────────────── */
+
+/* Section label — used on Home, Pods, Feed etc. */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;         /* bumped from 500 for legibility */
+  color: var(--rm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+/* Generic card */
+.card {
+  background: var(--rm-card);
+  border-radius: 14px;
+  border: 0.5px solid var(--rm-border);
+  padding: 12px 14px;
+}
+
+/* Badge */
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.badge--lime  { background: var(--rm-lime);  color: var(--rm-dark); }
+.badge--red   { background: #FEE2E2; color: #991B1B; }
+.badge--amber { background: #FEF3C7; color: #92400E; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--rm-dark);
+  color: var(--rm-lime);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 20px;
+  white-space: nowrap;
+  z-index: 500;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  animation: toastIn 0.2s ease;
+  max-width: calc(var(--page-max) - 40px);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Spinner */
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Fade in */
+.fade-in {
+  animation: fadeIn 0.22s ease both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* Live dot */
+.live-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+/* ── Modal base ───────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  padding-bottom: var(--nav-h);
+  animation: backdropIn 0.2s ease;
+}
+@keyframes backdropIn { from{opacity:0} to{opacity:1} }
+
+.modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: var(--page-max);
+  padding: 20px 20px 28px;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--rm-text);
+}
+.modal-close {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--rm-surface);
+  color: var(--rm-muted);
+  cursor: pointer;
+}
+.modal-close:hover { background: #E5E7EB; }
+
+.modal-step    { display: flex; flex-direction: column; gap: 0; }
+.modal-label   { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--rm-muted); margin-bottom: 10px; }
+.modal-input-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--rm-surface); border: 0.5px solid var(--rm-border);
+  border-radius: 10px; padding: 10px 12px; margin-bottom: 14px;
+}
+.modal-input {
+  border: none; background: none; font-size: 13px; color: var(--rm-text);
+  width: 100%; outline: none; font-family: inherit;
+}
+.modal-input::placeholder { color: var(--rm-muted); }
+.modal-textarea {
+  width: 100%; border: 0.5px solid var(--rm-border); border-radius: 10px;
+  padding: 10px 12px; font-size: 13px; color: var(--rm-text);
+  background: var(--rm-surface); resize: none; outline: none;
+  font-family: inherit; line-height: 1.5; margin-bottom: 10px;
+}
+.modal-textarea:focus { border-color: var(--rm-dark2); }
+.modal-next {
+  width: 100%; padding: 14px; border-radius: 12px;
+  background: var(--rm-dark); color: var(--rm-lime);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.modal-next:hover  { opacity: 0.9; }
+.modal-next:active { transform: scale(0.98); }
+.modal-next:disabled { opacity: 0.35; cursor: not-allowed; }
+.modal-done-btn {
+  width: 100%; padding: 12px; border-radius: 12px;
+  background: var(--rm-dark); color: var(--rm-lime);
+  font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px;
+}
+.modal-success {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 24px 0 8px; animation: fadeIn 0.3s ease;
+}
+.modal-success__text {
+  font-size: 14px; color: var(--rm-text);
+  text-align: center; line-height: 1.5; max-width: 280px;
+}
+.modal-error {
+  display: flex; align-items: center; gap: 6px;
+  background: #FEE2E2; color: #991B1B;
+  border-radius: 9px; padding: 9px 12px;
+  font-size: 12px; font-weight: 500; margin-bottom: 12px;
+}
+.back-link {
+  font-size: 13px; font-weight: 500; color: var(--rm-dark2);
+  margin-bottom: 16px; cursor: pointer; display: inline-block;
+}
+.back-link:hover { text-decoration: underline; }

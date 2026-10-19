@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import React, { useEffect, useRef } from 'react';
+import {
+  MapContainer, TileLayer, Marker,
+  Popup, Polyline, useMap,
+} from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../RouteMap.css';
 
-// ── Fix Leaflet's default icon paths broken by webpack ──────────────
+// ── Fix Leaflet's broken default icon paths in webpack/vite ───────────────
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -12,21 +15,21 @@ L.Icon.Default.mergeOptions({
   shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// ── Custom SVG icons ────────────────────────────────────────────────
+// ── Custom category pins ───────────────────────────────────────────────────
 function makeIcon(color, emoji, size = 36) {
   return L.divIcon({
     className: '',
     html: `
       <div style="
-        width:${size}px; height:${size}px;
+        width:${size}px;height:${size}px;
         background:${color};
         border-radius:50% 50% 50% 0;
         transform:rotate(-45deg);
         border:2px solid #fff;
         box-shadow:0 2px 8px rgba(0,0,0,0.25);
-        display:flex; align-items:center; justify-content:center;
+        display:flex;align-items:center;justify-content:center;
       ">
-        <span style="transform:rotate(45deg);font-size:${size * 0.42}px;line-height:1">
+        <span style="transform:rotate(45deg);font-size:${Math.round(size * 0.42)}px;line-height:1">
           ${emoji}
         </span>
       </div>`,
@@ -45,7 +48,7 @@ const ICONS = {
   stop:   makeIcon('#085420', '🚉', 32),
 };
 
-// ── Fit map to markers helper ───────────────────────────────────────
+// ── FitBounds helper — auto-zooms to show all markers on load ─────────────
 function FitBounds({ spots }) {
   const map = useMap();
   useEffect(() => {
@@ -56,12 +59,40 @@ function FitBounds({ spots }) {
   return null;
 }
 
-// ── Main component ──────────────────────────────────────────────────
-export default function RouteMap({ spots, userLocation, routeLine, height = 220 }) {
-  // Default centre: Midrand area
-  const centre = userLocation || { lat: -25.9986, lng: 28.1436 };
+/**
+ * MapRefBridge
+ *
+ * Bridges the Leaflet map instance to the parent via mapRef.
+ * The parent (Discover.jsx) calls mapRef.current.setView() to
+ * re-centre the map when the user taps "My location".
+ *
+ * This component must be rendered *inside* <MapContainer> so
+ * useMap() can access the Leaflet context.
+ */
+function MapRefBridge({ mapRef }) {
+  const map = useMap();
+  useEffect(() => {
+    if (mapRef) mapRef.current = map;
+    return () => { if (mapRef) mapRef.current = null; };
+  }, [map, mapRef]);
+  return null;
+}
 
-  const visibleSpots = spots.filter(s => s.lat && s.lng);
+// ── Main component ─────────────────────────────────────────────────────────
+export default function RouteMap({
+  spots       = [],
+  userLocation,
+  routeLine,
+  height      = 220,
+  mapRef,           // ← accepts mapRef from parent; was previously ignored
+}) {
+  const centre     = userLocation ?? { lat: -25.9986, lng: 28.1436 };
+  const validSpots = spots.filter(s => s.lat && s.lng);
+
+  const allPoints = [
+    ...(userLocation ? [{ lat: userLocation.lat, lng: userLocation.lng }] : []),
+    ...validSpots,
+  ];
 
   return (
     <div className="route-map-wrap" style={{ height }}>
@@ -73,17 +104,17 @@ export default function RouteMap({ spots, userLocation, routeLine, height = 220 
         attributionControl={false}
         scrollWheelZoom={false}
       >
-        {/* OpenStreetMap tiles — free, no API key */}
+        {/* OpenStreetMap tiles — free, no API key needed */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           maxZoom={19}
         />
 
-        {/* Attribution bottom-right */}
-        <div className="rm-attribution">© OpenStreetMap</div>
+        {/* Bridge the map instance to the parent's ref */}
+        {mapRef && <MapRefBridge mapRef={mapRef} />}
 
-        {/* Route polyline between stops */}
+        {/* Route polyline */}
         {routeLine && routeLine.length > 1 && (
           <Polyline
             positions={routeLine}
@@ -96,7 +127,7 @@ export default function RouteMap({ spots, userLocation, routeLine, height = 220 
           />
         )}
 
-        {/* User location marker */}
+        {/* User location */}
         {userLocation && (
           <Marker
             position={[userLocation.lat, userLocation.lng]}
@@ -109,30 +140,25 @@ export default function RouteMap({ spots, userLocation, routeLine, height = 220 
         )}
 
         {/* Spot markers */}
-        {visibleSpots.map(spot => (
+        {validSpots.map(spot => (
           <Marker
             key={spot.id}
             position={[spot.lat, spot.lng]}
-            icon={ICONS[spot.category] || ICONS.stop}
+            icon={ICONS[spot.category] ?? ICONS.stop}
           >
             <Popup className="rm-popup">
               <div className="rm-popup__name">{spot.name}</div>
               <div className="rm-popup__sub">{spot.sub}</div>
-              {spot.dist && (
-                <div className="rm-popup__dist">📍 {spot.dist}</div>
-              )}
+              {spot.dist && <div className="rm-popup__dist">📍 {spot.dist}</div>}
             </Popup>
           </Marker>
         ))}
 
-        {/* Auto-fit bounds to all markers */}
-        {visibleSpots.length > 0 && (
-          <FitBounds spots={[
-            ...(userLocation ? [{ lat: userLocation.lat, lng: userLocation.lng }] : []),
-            ...visibleSpots,
-          ]} />
-        )}
+        {/* Auto-fit to markers on load */}
+        {allPoints.length > 0 && <FitBounds spots={allPoints} />}
       </MapContainer>
+
+      <div className="rm-attribution">© OpenStreetMap</div>
     </div>
   );
 }

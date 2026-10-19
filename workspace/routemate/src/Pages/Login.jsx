@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { socialLogin } from '../services/api';
 import '../Login.css';
 
-/* ── tiny sub-components ────────────────────────────────────────── */
-
+// ── Reusable input field ───────────────────────────────────────────────────
 function InputField({ icon: Icon, type, placeholder, value, onChange, toggle, showPw, onToggle, error }) {
   return (
     <div className={`lf-field ${error ? 'lf-field--error' : ''}`}>
@@ -29,11 +29,16 @@ function InputField({ icon: Icon, type, placeholder, value, onChange, toggle, sh
             : <Eye    size={15} aria-hidden="true" />}
         </button>
       )}
-      {error && <p className="lf-field__err"><AlertCircle size={12} aria-hidden="true" /> {error}</p>}
+      {error && (
+        <p className="lf-field__err">
+          <AlertCircle size={12} aria-hidden="true" /> {error}
+        </p>
+      )}
     </div>
   );
 }
 
+// ── Social button ──────────────────────────────────────────────────────────
 function SocialBtn({ logo, label, onClick }) {
   return (
     <button className="social-btn" onClick={onClick} type="button">
@@ -43,10 +48,10 @@ function SocialBtn({ logo, label, onClick }) {
   );
 }
 
-/* ── Forgot password view ───────────────────────────────────────── */
+// ── Forgot password ────────────────────────────────────────────────────────
 function ForgotView({ onBack }) {
-  const [email, setEmail]     = useState('');
-  const [sent,  setSent]      = useState(false);
+  const [email, setEmail] = useState('');
+  const [sent,  setSent]  = useState(false);
 
   function handleSend(e) {
     e.preventDefault();
@@ -55,9 +60,7 @@ function ForgotView({ onBack }) {
 
   return (
     <div className="auth-view fade-in">
-      <button className="back-btn" onClick={onBack} aria-label="Back to login">
-        ← Back
-      </button>
+      <button className="back-btn" onClick={onBack} aria-label="Back to login">← Back</button>
       <h2 className="auth-heading">Reset password</h2>
       <p className="auth-sub">Enter your email and we'll send you a reset link.</p>
 
@@ -86,7 +89,7 @@ function ForgotView({ onBack }) {
   );
 }
 
-/* ── Sign up view ───────────────────────────────────────────────── */
+// ── Sign up ────────────────────────────────────────────────────────────────
 function SignUpView({ onSwitch, onSuccess }) {
   const [name,     setName]     = useState('');
   const [email,    setEmail]    = useState('');
@@ -96,16 +99,16 @@ function SignUpView({ onSwitch, onSuccess }) {
 
   function validate() {
     const e = {};
-    if (!name.trim())           e.name     = 'Name is required';
-    if (!email.includes('@'))   e.email    = 'Enter a valid email';
-    if (password.length < 6)    e.password = 'At least 6 characters';
+    if (!name.trim())          e.name     = 'Name is required';
+    if (!email.includes('@'))  e.email    = 'Enter a valid email';
+    if (password.length < 6)   e.password = 'At least 6 characters';
     return e;
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    const e2 = validate();
-    if (Object.keys(e2).length) { setErrors(e2); return; }
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
     localStorage.setItem('rm_auth', JSON.stringify({ name, email }));
     onSuccess();
   }
@@ -116,8 +119,8 @@ function SignUpView({ onSwitch, onSuccess }) {
       <p className="auth-sub">Join your commute community.</p>
 
       <div className="social-row">
-        <SocialBtn logo="G" label="Google"    onClick={onSuccess} />
-        <SocialBtn logo="" label="Apple"    onClick={onSuccess} />
+        <SocialBtn logo="G" label="Google" onClick={() => onSuccess('google')} />
+        <SocialBtn logo="" label="Apple"  onClick={() => onSuccess('apple')}  />
       </div>
 
       <div className="divider"><span>or email</span></div>
@@ -133,7 +136,11 @@ function SignUpView({ onSwitch, onSuccess }) {
             onChange={e => setName(e.target.value)}
             autoComplete="name"
           />
-          {errors.name && <p className="lf-field__err"><AlertCircle size={12} aria-hidden="true" /> {errors.name}</p>}
+          {errors.name && (
+            <p className="lf-field__err">
+              <AlertCircle size={12} aria-hidden="true" /> {errors.name}
+            </p>
+          )}
         </div>
 
         <InputField
@@ -144,15 +151,13 @@ function SignUpView({ onSwitch, onSuccess }) {
           onChange={e => setEmail(e.target.value)}
           error={errors.email}
         />
-
         <InputField
           icon={Lock}
           type="password"
           placeholder="Password (min 6 chars)"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          toggle
-          showPw={showPw}
+          toggle showPw={showPw}
           onToggle={() => setShowPw(s => !s)}
           error={errors.password}
         />
@@ -164,15 +169,13 @@ function SignUpView({ onSwitch, onSuccess }) {
 
       <p className="auth-switch">
         Already have an account?{' '}
-        <button className="auth-switch__link" onClick={onSwitch} type="button">
-          Log in
-        </button>
+        <button className="auth-switch__link" onClick={onSwitch} type="button">Log in</button>
       </p>
     </div>
   );
 }
 
-/* ── Log in view ────────────────────────────────────────────────── */
+// ── Log in ─────────────────────────────────────────────────────────────────
 function LogInView({ onSwitch, onForgot, onSuccess }) {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -182,7 +185,6 @@ function LogInView({ onSwitch, onForgot, onSuccess }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (!email || !password) { setError('Please fill in all fields.'); return; }
-    // Simulate auth — in production this hits your Node.js API
     localStorage.setItem('rm_auth', JSON.stringify({ email }));
     onSuccess();
   }
@@ -193,8 +195,8 @@ function LogInView({ onSwitch, onForgot, onSuccess }) {
       <p className="auth-sub">Log in to your commute community.</p>
 
       <div className="social-row">
-        <SocialBtn logo="G" label="Google" onClick={onSuccess} />
-        <SocialBtn logo="" label="Apple"  onClick={onSuccess} />
+        <SocialBtn logo="G" label="Google" onClick={() => onSuccess('google')} />
+        <SocialBtn logo="" label="Apple"  onClick={() => onSuccess('apple')}  />
       </div>
 
       <div className="divider"><span>or email</span></div>
@@ -219,16 +221,11 @@ function LogInView({ onSwitch, onForgot, onSuccess }) {
           placeholder="Password"
           value={password}
           onChange={e => { setPassword(e.target.value); setError(''); }}
-          toggle
-          showPw={showPw}
+          toggle showPw={showPw}
           onToggle={() => setShowPw(s => !s)}
         />
 
-        <button
-          className="auth-forgot"
-          type="button"
-          onClick={onForgot}
-        >
+        <button className="auth-forgot" type="button" onClick={onForgot}>
           Forgot password?
         </button>
 
@@ -239,62 +236,49 @@ function LogInView({ onSwitch, onForgot, onSuccess }) {
 
       <p className="auth-switch">
         Don't have an account?{' '}
-        <button className="auth-switch__link" onClick={onSwitch} type="button">
-          Sign up
-        </button>
+        <button className="auth-switch__link" onClick={onSwitch} type="button">Sign up</button>
       </p>
     </div>
   );
 }
 
-/* ── Main Login page ────────────────────────────────────────────── */
+// ── Main Login page ────────────────────────────────────────────────────────
 export default function Login() {
   const navigate = useNavigate();
-  const [view, setView] = useState('login'); // 'login' | 'signup' | 'forgot'
+  const [view, setView] = useState('login');
 
-  function handleSuccess() {
-    const onboarded = localStorage.getItem('rm_onboarded');
-    if (onboarded) {
-      navigate('/home', { replace: true });
-    } else {
-      navigate('/onboarding', { replace: true });
+  /**
+   * provider: undefined = email login, 'google' | 'apple' = social
+   * Social login calls socialLogin() from api.js which stores both
+   * rm_auth AND a profile stub, so the onboarding check doesn't loop.
+   */
+  async function handleSuccess(provider) {
+    if (provider === 'google' || provider === 'apple') {
+      await socialLogin(provider);
     }
+    const onboarded = localStorage.getItem('rm_onboarded');
+    navigate(onboarded ? '/home' : '/onboarding', { replace: true });
   }
 
   return (
     <div className="login-page">
-      {/* Header */}
       <div className="login-header">
         <div className="login-header__logo">
           <svg width="32" height="32" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-            <circle cx="24" cy="24" r="24" fill="#C7EF4E"/>
+            <circle cx="24" cy="24" r="24" fill="#C7EF4E" />
             <path d="M12 24 Q18 14 24 20 Q30 26 36 16"
-              stroke="#003310" strokeWidth="3" strokeLinecap="round" fill="none"/>
-            <circle cx="12" cy="24" r="3" fill="#003310"/>
-            <circle cx="36" cy="16" r="3" fill="#003310"/>
+              stroke="#003310" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <circle cx="12" cy="24" r="3" fill="#003310" />
+            <circle cx="36" cy="16" r="3" fill="#003310" />
           </svg>
           <span>Route Mate</span>
         </div>
       </div>
 
-      {/* Auth card */}
       <div className="login-card">
-        {view === 'login'  && (
-          <LogInView
-            onSwitch={() => setView('signup')}
-            onForgot={() => setView('forgot')}
-            onSuccess={handleSuccess}
-          />
-        )}
-        {view === 'signup' && (
-          <SignUpView
-            onSwitch={() => setView('login')}
-            onSuccess={handleSuccess}
-          />
-        )}
-        {view === 'forgot' && (
-          <ForgotView onBack={() => setView('login')} />
-        )}
+        {view === 'login'  && <LogInView  onSwitch={() => setView('signup')} onForgot={() => setView('forgot')} onSuccess={handleSuccess} />}
+        {view === 'signup' && <SignUpView onSwitch={() => setView('login')}  onSuccess={handleSuccess} />}
+        {view === 'forgot' && <ForgotView onBack={() => setView('login')} />}
       </div>
     </div>
   );

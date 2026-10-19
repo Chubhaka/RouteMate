@@ -5,16 +5,16 @@ import {
   MapPin, Flag, PenLine, MessageCircle,
   Bookmark, ChevronRight, Zap, TrendingUp, Shield,
 } from 'lucide-react';
-import { getMyPods, getSafetyAlerts, getProfile } from '../services/api';
+import {
+  getProfileAsync, getMyPods, getSafetyAlerts,
+} from '../services/api';
 import '../Home.css';
 
-const TRANSPORT_ICONS = { gautrain: '🚆', bus: '🚌', taxi: '🚕', train: '🚂' };
-
 const QUICK_ACTIONS = [
-  { id: 'delay',    icon: Flag,          label: 'Report delay',  color: '#EF4444', bg: '#FEE2E2', route: '/safety'   },
-  { id: 'post',     icon: PenLine,       label: 'Create post',   color: '#085420', bg: '#DCFCE7', route: '/feed'     },
-  { id: 'chat',     icon: MessageCircle, label: 'Open chat',     color: '#3B8BD4', bg: '#E6F1FB', route: '/pods'     },
-  { id: 'save',     icon: Bookmark,      label: 'Save location', color: '#F59E0B', bg: '#FEF3C7', route: '/discover' },
+  { id: 'delay',   icon: Flag,          label: 'Report delay',  color: '#EF4444', bg: '#FEE2E2', route: '/safety'   },
+  { id: 'post',    icon: PenLine,       label: 'Create post',   color: '#085420', bg: '#DCFCE7', route: '/feed'     },
+  { id: 'chat',    icon: MessageCircle, label: 'Open chat',     color: '#3B8BD4', bg: '#E6F1FB', route: '/pods'     },
+  { id: 'save',    icon: Bookmark,      label: 'Save location', color: '#F59E0B', bg: '#FEF3C7', route: '/discover' },
 ];
 
 export default function Home() {
@@ -27,7 +27,7 @@ export default function Home() {
   useEffect(() => {
     async function load() {
       const [p, myPods, safetyAlerts] = await Promise.all([
-        getProfile(),
+        getProfileAsync(),
         getMyPods(),
         getSafetyAlerts(),
       ]);
@@ -39,29 +39,30 @@ export default function Home() {
     load();
   }, []);
 
-  const firstName = profile?.name
-    ? profile.name.split(' ')[0]
-    : (JSON.parse(localStorage.getItem('rm_auth') || '{}').name?.split(' ')[0] ?? 'there');
+  // Greeting
+  const auth = JSON.parse(localStorage.getItem('rm_auth') || '{}');
+  const firstName = profile?.name?.split(' ')[0]
+    ?? auth.name?.split(' ')[0]
+    ?? 'there';
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-
-  const transportIcon = profile?.transport?.[0]
-    ? TRANSPORT_ICONS[profile.transport[0]] ?? '🚆'
-    : '🚆';
+  const hour     = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning'
+    : hour < 17  ? 'Good afternoon'
+    : 'Good evening';
 
   const fromStop = profile?.route?.from || 'Your boarding stop';
   const toStop   = profile?.route?.to   || 'Your destination';
 
-  const nearbySpots = [
-    { emoji: '☕', name: 'Station Deli',  dist: '80m',      tag: 'Coffee'  },
-    { emoji: '📚', name: 'Wits Library', dist: '5 stops',  tag: 'Study'   },
-    { emoji: '🛡️', name: 'Safe zone',   dist: 'Platform 2',tag: 'Safety'  },
-    { emoji: '🛒', name: 'Pick n Pay',   dist: '120m',      tag: 'Stores'  },
+  const NEARBY = [
+    { emoji: '☕', name: 'Station Deli', dist: '80m'       },
+    { emoji: '📚', name: 'Wits Library', dist: '5 stops'   },
+    { emoji: '🛡️', name: 'Safe zone',   dist: 'Platform 2' },
+    { emoji: '🛒', name: 'Pick n Pay',   dist: '120m'       },
   ];
 
   return (
     <div className="home">
+
       {/* ── Header ── */}
       <header className="home-header">
         <div className="home-header__inner">
@@ -86,14 +87,18 @@ export default function Home() {
           <div className="stat-pill">
             <Users size={14} aria-hidden="true" />
             <div>
-              <span className="stat-pill__val">{loading ? '–' : pods.reduce((s, p) => s + p.members, 0)}</span>
+              <span className="stat-pill__val">
+                {loading ? '–' : pods.reduce((s, p) => s + p.members, 0)}
+              </span>
               <span className="stat-pill__label">Pod members</span>
             </div>
           </div>
           <div className="stat-pill">
             <Zap size={14} aria-hidden="true" />
             <div>
-              <span className="stat-pill__val">{loading ? '–' : alerts.length}</span>
+              <span className="stat-pill__val">
+                {loading ? '–' : alerts.length}
+              </span>
               <span className="stat-pill__label">New alerts</span>
             </div>
           </div>
@@ -102,11 +107,10 @@ export default function Home() {
 
       <div className="home-body">
 
-        {/* ── Today's route (from profile) ── */}
+        {/* ── Today's route ── */}
         <section className="home-section" aria-labelledby="route-heading">
           <div className="section-label" id="route-heading">
-            <TrendingUp size={13} aria-hidden="true" />
-            Today's route
+            <TrendingUp size={13} aria-hidden="true" /> Today's route
           </div>
           <div className="route-card">
             <div className="route-card__line">
@@ -121,21 +125,21 @@ export default function Home() {
               <div className="route-card__name">{toStop}</div>
               <span className="route-card__badge">On time</span>
             </div>
+            {/* ← now links to the real CommuteInfo page */}
             <button
               className="route-card__detail"
-              onClick={() => navigate('/feed')}
-              aria-label="View full commute info on live feed"
+              onClick={() => navigate('/commute')}
+              aria-label="View full commute info"
             >
               View commute info <ChevronRight size={14} aria-hidden="true" />
             </button>
           </div>
         </section>
 
-        {/* ── Live alerts (from api) ── */}
+        {/* ── Live alerts ── */}
         <section className="home-section" aria-labelledby="alerts-heading">
           <div className="section-label" id="alerts-heading">
-            <AlertTriangle size={13} aria-hidden="true" />
-            Live alerts
+            <AlertTriangle size={13} aria-hidden="true" /> Live alerts
           </div>
           <div className="alerts-list">
             {loading ? (
@@ -148,7 +152,13 @@ export default function Home() {
                 </div>
               </div>
             ) : alerts.map(a => (
-              <div key={a.id} className={`alert-item alert-item--${a.severity === 'danger' ? 'danger' : a.severity === 'warning' ? 'warning' : 'success'}`}>
+              <div
+                key={a.id}
+                className={`alert-item alert-item--${
+                  a.severity === 'danger'  ? 'danger'  :
+                  a.severity === 'warning' ? 'warning' : 'success'
+                }`}
+              >
                 <AlertTriangle size={14} className="alert-item__icon" aria-hidden="true" />
                 <div className="alert-item__body">
                   <p className="alert-item__text">{a.title}</p>
@@ -159,18 +169,20 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Active pods (from profile + api) ── */}
+        {/* ── Active pods ── */}
         <section className="home-section" aria-labelledby="pods-heading">
           <div className="section-label" id="pods-heading">
-            <Users size={13} aria-hidden="true" />
-            Active pods
+            <Users size={13} aria-hidden="true" /> Active pods
           </div>
           {loading ? (
             <div className="home-loading">Loading pods…</div>
           ) : pods.length === 0 ? (
             <div className="home-empty-pods">
               <p>You haven't joined any pods yet.</p>
-              <button className="home-empty-btn" onClick={() => navigate('/pods')}>
+              <button
+                className="home-empty-btn"
+                onClick={() => navigate('/pods')}
+              >
                 Find a pod
               </button>
             </div>
@@ -179,7 +191,9 @@ export default function Home() {
               <div className="pod-card__header">
                 <div>
                   <p className="pod-card__name">{pod.name}</p>
-                  <p className="pod-card__type">{pod.type} · {pod.members} members</p>
+                  <p className="pod-card__type">
+                    {pod.type} · {pod.members} members
+                  </p>
                 </div>
                 {pod.newPosts > 0 && (
                   <span className="pod-badge">{pod.newPosts} new</span>
@@ -207,8 +221,7 @@ export default function Home() {
         {/* ── Quick actions ── */}
         <section className="home-section" aria-labelledby="actions-heading">
           <div className="section-label" id="actions-heading">
-            <Zap size={13} aria-hidden="true" />
-            Quick actions
+            <Zap size={13} aria-hidden="true" /> Quick actions
           </div>
           <div className="quick-grid">
             {QUICK_ACTIONS.map(action => {
@@ -220,7 +233,10 @@ export default function Home() {
                   onClick={() => navigate(action.route)}
                   aria-label={action.label}
                 >
-                  <div className="quick-card__icon" style={{ background: action.bg }}>
+                  <div
+                    className="quick-card__icon"
+                    style={{ background: action.bg }}
+                  >
                     <Icon size={18} color={action.color} aria-hidden="true" />
                   </div>
                   <span className="quick-card__label">{action.label}</span>
@@ -233,11 +249,10 @@ export default function Home() {
         {/* ── Discover nearby ── */}
         <section className="home-section" aria-labelledby="nearby-heading">
           <div className="section-label" id="nearby-heading">
-            <MapPin size={13} aria-hidden="true" />
-            Discover nearby
+            <MapPin size={13} aria-hidden="true" /> Discover nearby
           </div>
           <div className="nearby-scroll" role="list">
-            {nearbySpots.map((item, i) => (
+            {NEARBY.map((item, i) => (
               <button
                 key={i}
                 role="listitem"
@@ -245,7 +260,9 @@ export default function Home() {
                 onClick={() => navigate('/discover')}
                 aria-label={`${item.name} — ${item.dist}`}
               >
-                <span className="nearby-chip__emoji" aria-hidden="true">{item.emoji}</span>
+                <span className="nearby-chip__emoji" aria-hidden="true">
+                  {item.emoji}
+                </span>
                 <div>
                   <p className="nearby-chip__name">{item.name}</p>
                   <p className="nearby-chip__dist">{item.dist}</p>
