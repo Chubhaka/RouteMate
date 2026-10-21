@@ -1,6 +1,9 @@
 .home-header {
   background: var(--rm-dark);
   padding: 24px 20px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
  
 .home-header__inner {

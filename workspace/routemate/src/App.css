@@ -1,5 +1,17 @@
+.app-shell {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--rm-surface);
+  position: relative;
+  box-shadow: 0 0 40px rgba(0,0,0,0.12);
+}
+
 .page-content {
   flex: 1;
-  overflow-y: auto;
-  padding-bottom: var(--nav-h);
+  /* Remove overflow-y: auto from here */
+  padding-bottom: 90px;
 }
