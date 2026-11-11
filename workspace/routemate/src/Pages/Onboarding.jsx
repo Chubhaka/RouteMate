@@ -4,6 +4,7 @@ import {
   Train, Bus, Car, ArrowRight, ArrowLeft,
   MapPin, Clock, Check, Users, Zap
 } from 'lucide-react';
+import LocationInput from '../Components/Locationinput';
 import '../Onboarding.css';
 
 const TOTAL_STEPS = 6;
@@ -176,12 +177,13 @@ function StepRoute({ data, onChange, onNext, onBack }) {
         <div className="route-form__label">Boarding stop</div>
         <div className="route-input-wrap">
           <div className="route-input-dot route-input-dot--from" aria-hidden="true" />
-          <input
-            className="route-input"
-            type="text"
+          <LocationInput
+            inputClassName="route-input"
+            ariaLabel="Boarding stop"
             placeholder="Where do you board?"
             value={data.from}
-            onChange={e => onChange({ ...data, from: e.target.value })}
+            onChange={(text, place) => onChange({ ...data, from: text, fromPlace: place })}
+            allowCurrentLocation
           />
           <MapPin size={15} className="route-input-icon" aria-hidden="true" />
         </div>
@@ -191,12 +193,12 @@ function StepRoute({ data, onChange, onNext, onBack }) {
         <div className="route-form__label">Destination stop</div>
         <div className="route-input-wrap">
           <div className="route-input-dot route-input-dot--to" aria-hidden="true" />
-          <input
-            className="route-input"
-            type="text"
+          <LocationInput
+            inputClassName="route-input"
+            ariaLabel="Destination stop"
             placeholder="Where are you going?"
             value={data.to}
-            onChange={e => onChange({ ...data, to: e.target.value })}
+            onChange={(text, place) => onChange({ ...data, to: text, toPlace: place })}
           />
           <MapPin size={15} className="route-input-icon" aria-hidden="true" />
         </div>

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import PageHeader  from '../components/PageHeader';
 import RouteMap    from '../components/RouteMap';
+import LocationInput from '../Components/Locationinput';
 import { getSpots, toggleSaveSpot, addSpot } from '../services/api';
 import '../Discover.css';
  
@@ -36,6 +37,7 @@ const ROUTE_LINE = [
 // ── Add Spot Modal ────────────────────────────────────────────────────────────
 function AddSpotModal({ onClose, onAdd }) {
   const [name,     setName]     = useState('');
+  const [place,    setPlace]    = useState(null);
   const [category, setCategory] = useState('food');
   const [dist,     setDist]     = useState('');
   const [sub,      setSub]      = useState('');
@@ -50,13 +52,14 @@ function AddSpotModal({ onClose, onAdd }) {
     setSaving(true);
     const meta = ICON_MAP[category] ?? ICON_MAP.food;
     const spot = await addSpot({
-      name: name.trim(),
+      name: place?.name ?? name.trim(),
       category,
       dist: dist.trim(),
-      sub: sub.trim() || name.trim(),
+      sub: sub.trim() || (place?.name ?? name.trim()),
       iconBg:    meta.iconBg,
       iconColor: meta.iconColor,
-      lat: -25.9986, lng: 28.1436,   // default to Midrand — GPS lookup in v2
+      lat: place?.lat ?? -25.9986,
+      lng: place?.lng ?? 28.1436,
     });
     onAdd(spot);
     onClose();
@@ -75,7 +78,13 @@ function AddSpotModal({ onClose, onAdd }) {
           {err && <div className="modal-error" role="alert"><AlertCircle size={13} aria-hidden="true" /> {err}</div>}
  
           <p className="modal-label">Spot name</p>
-          <input className="modal-input-field" type="text" placeholder="e.g. Vida e Caffè Midrand" value={name} onChange={e => setName(e.target.value)} />
+          <LocationInput
+            inputClassName="modal-input-field"
+            ariaLabel="Spot name or address"
+            placeholder="e.g. Vida e Caffè Midrand"
+            value={name}
+            onChange={(text, p) => { setName(text); setPlace(p); }}
+          />
  
           <p className="modal-label" style={{ marginTop: 12 }}>Category</p>
           <div className="modal-cat-row">

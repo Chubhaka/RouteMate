@@ -381,3 +381,4 @@
   transition: opacity 0.15s;
 }
 .pf-signout-confirm:hover { opacity: 0.9; }
+.pf-section__body--visible { overflow: visible; }

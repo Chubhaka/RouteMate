@@ -7,6 +7,7 @@ import {
   Bell, Eye, EyeOff, Trash2,
 } from 'lucide-react';
 import { getProfileAsync, saveProfile, getMyPods } from '../services/api';
+import LocationInput from '../Components/Locationinput';
 import '../Profile.css';
 
 const TRANSPORT_OPTIONS = [
@@ -62,11 +63,13 @@ function EditField({ label, value, onChange, type = 'text', placeholder }) {
 }
 
 // ── Section wrapper ────────────────────────────────────────────────
-function Section({ title, children }) {
+function Section({ title, children, allowOverflow = false }) {
   return (
     <div className="pf-section">
       <p className="pf-section__title">{title}</p>
-      <div className="pf-section__body">{children}</div>
+      <div className={`pf-section__body ${allowOverflow ? 'pf-section__body--visible' : ''}`}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -116,6 +119,8 @@ export default function Profile() {
   const [editEmail,     setEditEmail]     = useState('');
   const [editFrom,      setEditFrom]      = useState('');
   const [editTo,        setEditTo]        = useState('');
+  const [editFromPlace, setEditFromPlace] = useState(null);
+  const [editToPlace,   setEditToPlace]   = useState(null);
   const [editTransport, setEditTransport] = useState([]);
   const [editInterests, setEditInterests] = useState([]);
   const [editPrivacy,   setEditPrivacy]   = useState('public');
@@ -153,6 +158,8 @@ export default function Profile() {
     setEditEmail(p.email ?? '');
     setEditFrom(p.route?.from ?? '');
     setEditTo(p.route?.to ?? '');
+    setEditFromPlace(p.route?.fromPlace ?? null);
+    setEditToPlace(p.route?.toPlace ?? null);
     setEditTransport(p.transport ?? []);
     setEditInterests(p.interests ?? []);
     setEditPrivacy(p.privacy ?? 'public');
@@ -178,7 +185,7 @@ export default function Profile() {
       ...profile,
       name:      editName,
       email:     editEmail,
-      route:     { from: editFrom, to: editTo },
+      route:     { from: editFrom, to: editTo, fromPlace: editFromPlace, toPlace: editToPlace },
       transport: editTransport,
       interests: editInterests,
       privacy:   editPrivacy,
@@ -258,9 +265,28 @@ export default function Profile() {
               <EditField label="Email"      value={editEmail} onChange={setEditEmail} type="email" placeholder="your@email.com" />
             </Section>
 
-            <Section title="Your route">
-              <EditField label="From (boarding stop)" value={editFrom} onChange={setEditFrom} placeholder="e.g. Midrand Station" />
-              <EditField label="To (destination)"     value={editTo}   onChange={setEditTo}   placeholder="e.g. Wits University"  />
+            <Section title="Your route" allowOverflow>
+              <div className="pf-edit-field">
+                <label className="pf-edit-label">From (boarding stop)</label>
+                <LocationInput
+                  inputClassName="pf-edit-input"
+                  ariaLabel="From (boarding stop)"
+                  placeholder="e.g. Midrand Station"
+                  value={editFrom}
+                  onChange={(text, place) => { setEditFrom(text); setEditFromPlace(place); }}
+                  allowCurrentLocation
+                />
+              </div>
+              <div className="pf-edit-field">
+                <label className="pf-edit-label">To (destination)</label>
+                <LocationInput
+                  inputClassName="pf-edit-input"
+                  ariaLabel="To (destination)"
+                  placeholder="e.g. Wits University"
+                  value={editTo}
+                  onChange={(text, place) => { setEditTo(text); setEditToPlace(place); }}
+                />
+              </div>
             </Section>
 
             <Section title="Transport type">

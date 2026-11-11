@@ -5,6 +5,7 @@ import {
   Info, Plus, AlertCircle,          // ← AlertCircle imported — was missing, caused crash
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import LocationInput from '../Components/Locationinput';
 import {
   getSafetyAlerts,
   getSafeTips,
@@ -34,6 +35,7 @@ function ReportModal({ onClose, onReportSubmitted }) {
   const [step,       setStep]       = useState(1);
   const [type,       setType]       = useState('');
   const [location,   setLocation]   = useState('');
+  const [place,      setPlace]      = useState(null);
   const [details,    setDetails]    = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result,     setResult]     = useState(null);
@@ -50,6 +52,7 @@ function ReportModal({ onClose, onReportSubmitted }) {
       const res = await submitSafetyReport({
         type,
         location: location.trim(),
+        coords:   place ? { lat: place.lat, lng: place.lng } : null,
         details:  details.trim(),
       });
       setResult(res);
@@ -174,14 +177,14 @@ function ReportModal({ onClose, onReportSubmitted }) {
                 <p className="modal-label">Location</p>
                 <div className="modal-input-row">
                   <MapPin size={15} color="#003310" aria-hidden="true" />
-                  <input
-                    className="modal-input"
-                    type="text"
+                  <LocationInput
+                    inputClassName="modal-input"
                     placeholder="e.g. Noord Street bus stop"
+                    ariaLabel="Location of concern"
+                    required
                     value={location}
-                    onChange={e => setLocation(e.target.value)}
-                    aria-label="Location of concern"
-                    aria-required="true"
+                    onChange={(text, p) => { setLocation(text); setPlace(p); }}
+                    allowCurrentLocation
                   />
                 </div>
 

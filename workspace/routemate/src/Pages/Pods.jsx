@@ -11,6 +11,7 @@ import {
 } from '../services/api';
 import PageHeader from '../components/PageHeader';
 import PodChat from '../components/PodChat';
+import LocationInput from '../Components/Locationinput';
 import '../Pods.css';
 
 const FILTERS       = ['All', 'By route', 'By stop', 'By time', 'By interest'];
@@ -80,6 +81,8 @@ export default function Pods() {
   const [transport,  setTransport]  = useState([]);
   const [fromStop,   setFromStop]   = useState('');
   const [toStop,     setToStop]     = useState('');
+  const [fromPlace,  setFromPlace]  = useState(null);
+  const [toPlace,    setToPlace]    = useState(null);
   const [timeFrom,   setTimeFrom]   = useState('07:30');
   const [timeTo,     setTimeTo]     = useState('09:00');
   const [privacy,    setPrivacy]    = useState('public');
@@ -144,13 +147,14 @@ export default function Pods() {
     setCreating(true);
     try {
       await createPod({
-        name: podName, transport, from: fromStop, to: toStop,
+        name: podName, transport, from: fromStop, to: toStop, fromPlace, toPlace,
         timeWindow: `${timeFrom}–${timeTo}`,
         privacy,
       });
       const mine = await getMyPods();
       setMyPods(mine);
       setPodName(''); setTransport([]); setFromStop(''); setToStop('');
+      setFromPlace(null); setToPlace(null);
       setPrivacy('public');
       setTab('mine');
       showToast('Pod created and joined!');
@@ -358,24 +362,23 @@ export default function Pods() {
                 <div className="route-inputs">
                   <div className="route-input-row">
                     <MapPin size={14} color="var(--rm-dark)" aria-hidden="true" />
-                    <input
-                      className="create-input"
-                      type="text"
+                    <LocationInput
+                      inputClassName="create-input"
                       placeholder="From: boarding stop"
+                      ariaLabel="Boarding stop"
                       value={fromStop}
-                      onChange={e => setFromStop(e.target.value)}
-                      aria-label="Boarding stop"
+                      onChange={(text, place) => { setFromStop(text); setFromPlace(place); }}
+                      allowCurrentLocation
                     />
                   </div>
                   <div className="route-input-row">
                     <MapPin size={14} color="var(--rm-lime)" aria-hidden="true" />
-                    <input
-                      className="create-input"
-                      type="text"
+                    <LocationInput
+                      inputClassName="create-input"
                       placeholder="To: destination stop"
+                      ariaLabel="Destination stop"
                       value={toStop}
-                      onChange={e => setToStop(e.target.value)}
-                      aria-label="Destination stop"
+                      onChange={(text, place) => { setToStop(text); setToPlace(place); }}
                     />
                   </div>
                 </div>

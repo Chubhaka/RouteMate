@@ -279,7 +279,10 @@ export async function createPod(podData) {
     newPosts:    0,
     active:      true,
     preview:     'You created this pod — be the first to post!',
-    route:       { from: podData.from ?? '', to: podData.to ?? '' },
+    route:       {
+      from: podData.from ?? '', to: podData.to ?? '',
+      fromPlace: podData.fromPlace ?? null, toPlace: podData.toPlace ?? null,
+    },
     filterType:  'route',
   };
   _pods = [..._pods, newPod];
@@ -350,7 +353,12 @@ export async function getSafeTips() {
 
 export async function submitSafetyReport(reportData) {
   await delay(200);
-  const key      = `${reportData.type}::${reportData.location}`;
+  // Same place -> same key, however it was typed. Coordinates from the place
+  // search are rounded to ~110 m so two commuters picking the same stop match.
+  const where = reportData.coords
+    ? `${reportData.coords.lat.toFixed(3)},${reportData.coords.lng.toFixed(3)}`
+    : reportData.location.trim().toLowerCase();
+  const key = `${reportData.type}::${where}`;
   const existing = _pendingReports.find(r => r.key === key);
 
   if (existing) {
@@ -360,6 +368,7 @@ export async function submitSafetyReport(reportData) {
         id:          _nextReportId++,
         severity:    reportData.type === 'unsafe' ? 'danger' : 'warning',
         reportCount: existing.count,
+        coords:      reportData.coords ?? null,
         title:       `${reportData.type === 'unsafe' ? 'Unsafe area' : 'Concern'} — ${reportData.location}`,
         detail:      reportData.details || 'Community-reported concern. Exercise caution.',
         meta:        `${existing.count} reports · Just now`,
