@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, AlertTriangle, Users, CheckCircle,
   Phone, Truck, Flag, Clock, MapPin, X,
-  Info, Plus, AlertCircle,          // ← AlertCircle imported — was missing, caused crash
+  Info, Plus, AlertCircle,         
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import LocationInput from '../Components/Locationinput';

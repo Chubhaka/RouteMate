@@ -9,21 +9,7 @@ const DEBOUNCE_MS = 300;
 const KIND_ICON = { rail: Train, bus: Bus, taxi: Car, place: MapPin };
 const CURRENT = { id: '__current__', kind: 'current' };
 
-/**
- * LocationInput — a text input that suggests real places as you type.
- *
- * Props
- *   value                 controlled text
- *   onChange(text, place) called on every keystroke with (text, null) and on
- *                         selection with (place.label, place). One callback, so
- *                         parents never fight over stale state.
- *   placeholder, ariaLabel, required
- *   inputClassName        lets the host form keep its own input styling
- *   allowCurrentLocation  adds a "Use my current location" option
- *
- * Degrades gracefully: if the search service is unreachable the user can keep
- * typing and whatever they typed is used — the form is never blocked.
- */
+
 export default function LocationInput({
   value,
   onChange,

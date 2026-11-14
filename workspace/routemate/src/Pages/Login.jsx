@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
-import { socialLogin } from '../services/api';
+import {
+  signUp, signIn, signInWithGoogle, socialLogin, requestPasswordReset,
+} from '../services/api';
+import { isSupabaseConfigured } from '../lib/Supabase';
 import '../Login.css';
 
 // ── Reusable input field ───────────────────────────────────────────────────
@@ -16,6 +19,7 @@ function InputField({ icon: Icon, type, placeholder, value, onChange, toggle, sh
         value={value}
         onChange={onChange}
         autoComplete={type === 'email' ? 'email' : 'current-password'}
+        aria-label={placeholder}
       />
       {toggle && (
         <button
@@ -38,24 +42,82 @@ function InputField({ icon: Icon, type, placeholder, value, onChange, toggle, sh
   );
 }
 
-// ── Social button ──────────────────────────────────────────────────────────
-function SocialBtn({ logo, label, onClick }) {
+function SocialBtn({ logo, label, onClick, disabled }) {
   return (
-    <button className="social-btn" onClick={onClick} type="button">
+    <button className="social-btn" onClick={onClick} type="button" disabled={disabled}>
       <span className="social-btn__logo" aria-hidden="true">{logo}</span>
       {label}
     </button>
   );
 }
 
+function FormError({ message }) {
+  if (!message) return null;
+  return (
+    <div className="auth-error" role="alert">
+      <AlertCircle size={14} aria-hidden="true" /> {message}
+    </div>
+  );
+}
+
+/**
+ * Google / Apple buttons shared by log in and sign up.
+ *  - Supabase configured: Google is a real OAuth redirect. Apple needs a paid
+ *    Apple developer account, so it says so instead of pretending.
+ *  - Demo mode: both behave like the original localStorage demo.
+ */
+function SocialRow({ onSuccess, onError }) {
+  const [busy, setBusy] = useState(false);
+
+  async function handleGoogle() {
+    onError('');
+    setBusy(true);
+    try {
+      const result = await signInWithGoogle();
+      if (!result.redirected) onSuccess(result);
+    } catch (err) {
+      onError(err.message);
+      setBusy(false);
+    }
+  }
+
+  async function handleApple() {
+    onError('');
+    if (isSupabaseConfigured) {
+      onError('Apple sign-in is not set up yet — please use Google or email.');
+      return;
+    }
+    await socialLogin('apple');
+    onSuccess({ onboarded: Boolean(localStorage.getItem('rm_onboarded')) });
+  }
+
+  return (
+    <div className="social-row">
+      <SocialBtn logo="G" label="Google" onClick={handleGoogle} disabled={busy} />
+      <SocialBtn logo="" label="Apple"  onClick={handleApple}  disabled={busy} />
+    </div>
+  );
+}
+
 // ── Forgot password ────────────────────────────────────────────────────────
 function ForgotView({ onBack }) {
-  const [email, setEmail] = useState('');
-  const [sent,  setSent]  = useState(false);
+  const [email,   setEmail]   = useState('');
+  const [sent,    setSent]    = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error,   setError]   = useState('');
 
-  function handleSend(e) {
+  async function handleSend(e) {
     e.preventDefault();
-    if (email) setSent(true);
+    if (!email) return;
+    setError('');
+    setSending(true);
+    try {
+      await requestPasswordReset(email);
+      setSent(true);
+    } catch (err) {
+      setError(err.message);
+    }
+    setSending(false);
   }
 
   return (
@@ -73,6 +135,7 @@ function ForgotView({ onBack }) {
         </div>
       ) : (
         <form onSubmit={handleSend}>
+          <FormError message={error} />
           <InputField
             icon={Mail}
             type="email"
@@ -80,8 +143,8 @@ function ForgotView({ onBack }) {
             value={email}
             onChange={e => setEmail(e.target.value)}
           />
-          <button className="auth-submit" type="submit" disabled={!email}>
-            Send reset link <ArrowRight size={16} aria-hidden="true" />
+          <button className="auth-submit" type="submit" disabled={!email || sending}>
+            {sending ? 'Sending…' : 'Send reset link'} <ArrowRight size={16} aria-hidden="true" />
           </button>
         </form>
       )}
@@ -91,26 +154,60 @@ function ForgotView({ onBack }) {
 
 // ── Sign up ────────────────────────────────────────────────────────────────
 function SignUpView({ onSwitch, onSuccess }) {
-  const [name,     setName]     = useState('');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [showPw,   setShowPw]   = useState(false);
-  const [errors,   setErrors]   = useState({});
+  const [name,      setName]      = useState('');
+  const [email,     setEmail]     = useState('');
+  const [password,  setPassword]  = useState('');
+  const [showPw,    setShowPw]    = useState(false);
+  const [errors,    setErrors]    = useState({});
+  const [formError, setFormError] = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [confirmEmail, setConfirmEmail] = useState(false);
 
   function validate() {
     const e = {};
-    if (!name.trim())          e.name     = 'Name is required';
-    if (!email.includes('@'))  e.email    = 'Enter a valid email';
-    if (password.length < 6)   e.password = 'At least 6 characters';
+    if (!name.trim())         e.name     = 'Name is required';
+    if (!email.includes('@')) e.email    = 'Enter a valid email';
+    if (password.length < 6)  e.password = 'At least 6 characters';
     return e;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setFormError('');
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-    localStorage.setItem('rm_auth', JSON.stringify({ name, email }));
-    onSuccess();
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
+
+    setLoading(true);
+    try {
+      const result = await signUp({ name: name.trim(), email: email.trim(), password });
+      if (result.needsConfirmation) {
+        setConfirmEmail(true);
+        setLoading(false);
+      } else {
+        onSuccess(result);
+      }
+    } catch (err) {
+      setFormError(err.message);
+      setLoading(false);
+    }
+  }
+
+  if (confirmEmail) {
+    return (
+      <div className="auth-view fade-in">
+        <div className="sent-confirm">
+          <div className="sent-confirm__icon" aria-hidden="true">✉️</div>
+          <p className="sent-confirm__text">
+            We sent a confirmation link to <strong>{email}</strong>.
+            Click it, then come back and log in.
+          </p>
+          <button className="auth-switch__link" type="button" onClick={onSwitch}>
+            Go to log in
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -118,12 +215,11 @@ function SignUpView({ onSwitch, onSuccess }) {
       <h2 className="auth-heading">Create account</h2>
       <p className="auth-sub">Join your commute community.</p>
 
-      <div className="social-row">
-        <SocialBtn logo="G" label="Google" onClick={() => onSuccess('google')} />
-        <SocialBtn logo="" label="Apple"  onClick={() => onSuccess('apple')}  />
-      </div>
+      <SocialRow onSuccess={onSuccess} onError={setFormError} />
 
       <div className="divider"><span>or email</span></div>
+
+      <FormError message={formError} />
 
       <form onSubmit={handleSubmit} noValidate>
         <div className={`lf-field ${errors.name ? 'lf-field--error' : ''}`}>
@@ -132,6 +228,7 @@ function SignUpView({ onSwitch, onSuccess }) {
             className="lf-field__input"
             type="text"
             placeholder="Full name"
+            aria-label="Full name"
             value={name}
             onChange={e => setName(e.target.value)}
             autoComplete="name"
@@ -162,8 +259,8 @@ function SignUpView({ onSwitch, onSuccess }) {
           error={errors.password}
         />
 
-        <button className="auth-submit" type="submit">
-          Create account <ArrowRight size={16} aria-hidden="true" />
+        <button className="auth-submit" type="submit" disabled={loading}>
+          {loading ? 'Creating account…' : 'Create account'} <ArrowRight size={16} aria-hidden="true" />
         </button>
       </form>
 
@@ -181,12 +278,19 @@ function LogInView({ onSwitch, onForgot, onSuccess }) {
   const [password, setPassword] = useState('');
   const [showPw,   setShowPw]   = useState(false);
   const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!email || !password) { setError('Please fill in all fields.'); return; }
-    localStorage.setItem('rm_auth', JSON.stringify({ email }));
-    onSuccess();
+    setError('');
+    setLoading(true);
+    try {
+      onSuccess(await signIn({ email: email.trim(), password }));
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
   }
 
   return (
@@ -194,18 +298,11 @@ function LogInView({ onSwitch, onForgot, onSuccess }) {
       <h2 className="auth-heading">Welcome back</h2>
       <p className="auth-sub">Log in to your commute community.</p>
 
-      <div className="social-row">
-        <SocialBtn logo="G" label="Google" onClick={() => onSuccess('google')} />
-        <SocialBtn logo="" label="Apple"  onClick={() => onSuccess('apple')}  />
-      </div>
+      <SocialRow onSuccess={onSuccess} onError={setError} />
 
       <div className="divider"><span>or email</span></div>
 
-      {error && (
-        <div className="auth-error" role="alert">
-          <AlertCircle size={14} aria-hidden="true" /> {error}
-        </div>
-      )}
+      <FormError message={error} />
 
       <form onSubmit={handleSubmit} noValidate>
         <InputField
@@ -229,8 +326,8 @@ function LogInView({ onSwitch, onForgot, onSuccess }) {
           Forgot password?
         </button>
 
-        <button className="auth-submit" type="submit">
-          Log in <ArrowRight size={16} aria-hidden="true" />
+        <button className="auth-submit" type="submit" disabled={loading}>
+          {loading ? 'Logging in…' : 'Log in'} <ArrowRight size={16} aria-hidden="true" />
         </button>
       </form>
 
@@ -247,17 +344,10 @@ export default function Login() {
   const navigate = useNavigate();
   const [view, setView] = useState('login');
 
-  /**
-   * provider: undefined = email login, 'google' | 'apple' = social
-   * Social login calls socialLogin() from api.js which stores both
-   * rm_auth AND a profile stub, so the onboarding check doesn't loop.
-   */
-  async function handleSuccess(provider) {
-    if (provider === 'google' || provider === 'apple') {
-      await socialLogin(provider);
-    }
-    const onboarded = localStorage.getItem('rm_onboarded');
-    navigate(onboarded ? '/home' : '/onboarding', { replace: true });
+  // Every auth path resolves to { onboarded }: new users go to onboarding,
+  // returning users (on any device — it's read from the database) go home.
+  function handleSuccess(result) {
+    navigate(result?.onboarded ? '/home' : '/onboarding', { replace: true });
   }
 
   return (

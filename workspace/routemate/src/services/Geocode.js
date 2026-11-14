@@ -1,21 +1,4 @@
-/**
- * services/geocode.js
- *
- * Place search for boarding / destination stops.
- *
- * Uses Photon (https://photon.komoot.io) — a free, key-less geocoder built on
- * OpenStreetMap data, the same data the Discover map already renders. Photon is
- * designed for search-as-you-type. (Nominatim is NOT used: its usage policy
- * forbids autocomplete-style traffic.)
- *
- * Fair use: the public Photon server is shared infrastructure, so callers must
- * debounce (LocationInput waits 300 ms), abort stale requests, and this module
- * caches results. For production, self-host Photon or use a paid provider and
- * point VITE_PHOTON_URL at it — nothing else changes.
- *
- * Every function here is the only place that knows the provider's response
- * shape, so swapping providers means editing normalisePlace() and the URL.
- */
+
 
 const BASE = import.meta.env?.VITE_PHOTON_URL ?? 'https://photon.komoot.io';
 

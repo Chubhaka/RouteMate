@@ -6,7 +6,7 @@ import {
   Car, Check, Edit2, Save, X, Shield,
   Bell, Eye, EyeOff, Trash2,
 } from 'lucide-react';
-import { getProfileAsync, saveProfile, getMyPods } from '../services/api';
+import { getProfileAsync, saveProfile, getMyPods, signOut } from '../services/api';
 import LocationInput from '../Components/Locationinput';
 import '../Profile.css';
 
@@ -198,10 +198,8 @@ export default function Profile() {
     showToast('Profile saved!');
   }
 
-  function handleSignOut() {
-    localStorage.removeItem('rm_auth');
-    localStorage.removeItem('rm_profile');
-    localStorage.removeItem('rm_onboarded');
+  async function handleSignOut() {
+    await signOut(); // ends the Supabase session too — clearing localStorage alone would not
     navigate('/login', { replace: true });
   }
 

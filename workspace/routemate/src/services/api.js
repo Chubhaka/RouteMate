@@ -15,6 +15,13 @@
  *     filtered views of the same data — joining a pod moves it across.
  */
 
+import { isSupabaseConfigured } from '../lib/Supabase';
+import * as remote from '../services/Supabaseapi';
+import { rankPods } from '../services/Podmatch';
+
+// Mock-mode only: interest tags the Supabase `pods.interest_tags` column holds for real.
+const MOCK_TAGS = { 2: ['📚 Study'], 5: ['💻 Tech', '💼 Business'] };
+
 // ── Seed data ──────────────────────────────────────────────────────────────
 
 const ALL_PODS = [
@@ -189,11 +196,13 @@ function saveProfileSync(updates) {
 // ── Auth ───────────────────────────────────────────────────────────────────
 
 export async function getProfileAsync() {
+  if (isSupabaseConfigured) return remote.getProfile();
   await delay();
   return getProfile();
 }
 
 export async function saveProfile(profile) {
+  if (isSupabaseConfigured) return remote.saveProfile(profile);
   await delay();
   localStorage.setItem('rm_profile', JSON.stringify(profile));
   return profile;
@@ -229,6 +238,7 @@ export async function socialLogin(provider, userData = {}) {
 // ── Pods ───────────────────────────────────────────────────────────────────
 
 export async function getMyPods() {
+  if (isSupabaseConfigured) return remote.getMyPods();
   await delay();
   const profile = getProfile();
   const ids     = resolveJoinedIds(profile);
@@ -237,16 +247,19 @@ export async function getMyPods() {
 }
 
 export async function getDiscoverPods() {
+  if (isSupabaseConfigured) return remote.getDiscoverPods();
   await delay();
   const profile = getProfile();
   const ids     = resolveJoinedIds(profile);
   // Discoverable = pods the user has NOT joined
-  return _pods
+  const available = _pods
     .filter(p => !ids.includes(p.id))
-    .map(p => ({ ...p, match: p.match ?? Math.floor(50 + Math.random() * 40) }));
+    .map(p => ({ ...p, interestTags: MOCK_TAGS[p.id] ?? [] }));
+  return rankPods(available, profile);
 }
 
 export async function joinPod(podId) {
+  if (isSupabaseConfigured) return remote.joinPod(podId);
   await delay();
   const id      = Number(podId);
   const profile = getProfile() ?? {};
@@ -259,6 +272,7 @@ export async function joinPod(podId) {
 }
 
 export async function leavePod(podId) {
+  if (isSupabaseConfigured) return remote.leavePod(podId);
   await delay();
   const id      = Number(podId);
   const profile = getProfile() ?? {};
@@ -268,6 +282,7 @@ export async function leavePod(podId) {
 }
 
 export async function createPod(podData) {
+  if (isSupabaseConfigured) return remote.createPod(podData);
   await delay(200);
   const newPod = {
     id:          Date.now(),
@@ -414,4 +429,73 @@ export async function addSpot(spotData) {
   SPOTS.push(newSpot);
   _savedSpotIds.push(newSpot.id);
   return newSpot;
+}
+
+
+// ── Auth + onboarding ──────────────────────────────────────────────────────
+// With Supabase configured these are real accounts and real database rows.
+// Without it they behave like the original localStorage demo.
+
+export { syncLocalMirror, clearLocalMirror } from '../services/Supabaseapi';
+
+export async function signUp({ name, email, password }) {
+  if (isSupabaseConfigured) return remote.signUp({ name, email, password });
+  await delay(150);
+  localStorage.setItem('rm_auth', JSON.stringify({ name, email }));
+  return { needsConfirmation: false, onboarded: false };
+}
+
+export async function signIn({ email, password }) {
+  if (isSupabaseConfigured) return remote.signIn({ email, password });
+  await delay(150);
+  const existing = JSON.parse(localStorage.getItem('rm_auth') || '{}');
+  localStorage.setItem('rm_auth', JSON.stringify({ ...existing, email }));
+  return { onboarded: Boolean(localStorage.getItem('rm_onboarded')) };
+}
+
+export async function signInWithGoogle() {
+  if (isSupabaseConfigured) return remote.signInWithGoogle();
+  await socialLogin('google');
+  return { redirected: false, onboarded: Boolean(localStorage.getItem('rm_onboarded')) };
+}
+
+export async function signOut() {
+  if (isSupabaseConfigured) return remote.signOut();
+  ['rm_auth', 'rm_profile', 'rm_onboarded'].forEach(key => localStorage.removeItem(key));
+  return undefined;
+}
+
+export function onAuthChange(callback) {
+  return isSupabaseConfigured ? remote.onAuthChange(callback) : () => {};
+}
+
+/** Persist everything collected in onboarding and mark the user as onboarded. */
+export async function completeOnboarding(profile) {
+  if (isSupabaseConfigured) return remote.completeOnboarding(profile);
+  await delay(150);
+  const merged = saveProfileSync({
+    ...profile,
+    joinedPodIds: profile.joinedPodIds ?? [],
+    joinedPods: undefined,
+    onboarded: true,
+  });
+  localStorage.setItem('rm_onboarded', 'true');
+  return merged;
+}
+
+/** Pods to suggest at the end of onboarding, ranked against the answers so far. */
+export async function getSuggestedPods(profile, limit = 3) {
+  if (isSupabaseConfigured) return remote.getSuggestedPods(profile, limit);
+  await delay();
+  const joined = resolveJoinedIds(getProfile());
+  const available = _pods
+    .filter(p => !joined.includes(p.id))
+    .map(p => ({ ...p, interestTags: MOCK_TAGS[p.id] ?? [] }));
+  return rankPods(available, profile, limit);
+}
+
+export async function requestPasswordReset(email) {
+  if (isSupabaseConfigured) return remote.requestPasswordReset(email);
+  await delay(150); // demo mode: nothing to send
+  return undefined;
 }

@@ -1,42 +1,51 @@
 import React from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter, Routes, Route,
+  Navigate, useLocation,
+} from 'react-router-dom';
 
-import BottomNav from './components/BottomNav';
-import Splash from './pages/Splash';
-import Login from './Pages/Login';
-import Onboarding from './Pages/Onboarding';
-import Home from './Pages/Home';
-import Pods from './Pages/Pods';
-import LiveFeed from './Pages/LiveFeed';
-import Discover from './Pages/Discover';
-import Safety from './Pages/Safety';
-import CommuteInfo from './Pages/Commuteinfo';
+import BottomNav   from './Components/BottomNav';
+import Splash      from './Pages/Splash';
+import Login       from './Pages/Login';
+import Onboarding  from './Pages/Onboarding';
+import Home        from './Pages/Home';
+import Pods        from './Pages/Pods';
+import LiveFeed    from './Pages/LiveFeed';
+import Discover    from './Pages/Discover';
+import Safety      from './Pages/Safety';
+import CommuteInfo from './Pages/CommuteInfo';
 import Profile     from './Pages/Profile';
+import AuthSync    from './Components/Authsync';
 
 import './App.css';
 
 // Routes where the bottom nav should be hidden
-const NO_NAV_ROUTES = ['/', '/login', '/onboarding'];
+const NO_NAV = ['/', '/login', '/onboarding'];
 
 function Layout() {
   const location = useLocation();
-  const showNav = !NO_NAV_ROUTES.includes(location.pathname);
+  const showNav  = !NO_NAV.includes(location.pathname);
 
   return (
     <div className="app-shell">
+      <AuthSync />
       <div className="page-content">
         <Routes>
-          <Route path="/" element={<Splash />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
-          <Route path="/pods" element={<PrivateRoute><Pods /></PrivateRoute>} />
-          <Route path="/feed" element={<PrivateRoute><LiveFeed /></PrivateRoute>} />
-          <Route path="/discover" element={<PrivateRoute><Discover /></PrivateRoute>} />
-          <Route path="/safety" element={<PrivateRoute><Safety /></PrivateRoute>} />
-          <Route path="/commute"      element={<PrivateRoute><CommuteInfo /></PrivateRoute>} />
-          <Route path="/profile"      element={<PrivateRoute><Profile /></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/"             element={<Splash />} />
+          <Route path="/login"        element={<Login />} />
+          <Route path="/onboarding"   element={<Onboarding />} />
+
+          {/* Main app — all protected */}
+          <Route path="/home"         element={<Private><Home /></Private>} />
+          <Route path="/pods"         element={<Private><Pods /></Private>} />
+          <Route path="/feed"         element={<Private><LiveFeed /></Private>} />
+          <Route path="/discover"     element={<Private><Discover /></Private>} />
+          <Route path="/safety"       element={<Private><Safety /></Private>} />
+          <Route path="/commute"      element={<Private><CommuteInfo /></Private>} />
+          <Route path="/profile"      element={<Private><Profile /></Private>} />
+
+          {/* Fallback */}
+          <Route path="*"             element={<Navigate to="/" replace />} />
         </Routes>
       </div>
 
@@ -45,11 +54,15 @@ function Layout() {
   );
 }
 
-function PrivateRoute({ children }) {
+function Private({ children }) {
   const isAuth = localStorage.getItem('rm_auth');
   return isAuth ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
-  return <Layout />;
+  return (
+    <BrowserRouter>
+      <Layout />
+    </BrowserRouter>
+  );
 }

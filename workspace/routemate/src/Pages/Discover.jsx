@@ -37,7 +37,7 @@ const ROUTE_LINE = [
 // ── Add Spot Modal ────────────────────────────────────────────────────────────
 function AddSpotModal({ onClose, onAdd }) {
   const [name,     setName]     = useState('');
-  const [place,    setPlace]    = useState(null);
+  const [place,    setPlace]    = useState(null);   // chosen suggestion, if any
   const [category, setCategory] = useState('food');
   const [dist,     setDist]     = useState('');
   const [sub,      setSub]      = useState('');
@@ -58,6 +58,7 @@ function AddSpotModal({ onClose, onAdd }) {
       sub: sub.trim() || (place?.name ?? name.trim()),
       iconBg:    meta.iconBg,
       iconColor: meta.iconColor,
+      // Real coordinates when a suggestion was chosen; Midrand only as a last resort.
       lat: place?.lat ?? -25.9986,
       lng: place?.lng ?? 28.1436,
     });

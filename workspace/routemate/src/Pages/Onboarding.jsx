@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Train, Bus, Car, ArrowRight, ArrowLeft,
-  MapPin, Clock, Check, Users, Zap
+  MapPin, Clock, Check, Users, Zap, AlertCircle, Loader
 } from 'lucide-react';
 import LocationInput from '../Components/Locationinput';
+import { completeOnboarding, getSuggestedPods } from '../services/api';
 import '../Onboarding.css';
 
 const TOTAL_STEPS = 6;
@@ -22,12 +23,6 @@ const INTEREST_OPTIONS = [
   '☕ Coffee',  '🎵 Music',   '📚 Study',   '💼 Business',
   '🎙️ Podcasts','💻 Tech',    '🏃 Fitness', '📰 News',
   '🎨 Design',  '🍕 Food',    '🌿 Nature',  '📷 Photography',
-];
-
-const SUGGESTED_PODS = [
-  { id: 1, name: 'Midrand → Wits', type: 'Route-based · Gautrain', members: 14, match: 94 },
-  { id: 2, name: 'Wits Campus Students', type: 'Interest-based · Students', members: 31, match: 81 },
-  { id: 3, name: 'Centurion 8am Commuters', type: 'Time-based · 7:30–9am', members: 22, match: 73 },
 ];
 
 /* ── Progress bar ───────────────────────────────────────────────── */
@@ -163,7 +158,7 @@ function StepTransport({ data, onChange, onNext, onBack }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   STEP 3 — Set route
+   STEP 3 — Set route (with place search)
 ══════════════════════════════════════════════════════════════════════ */
 function StepRoute({ data, onChange, onNext, onBack }) {
   return (
@@ -313,9 +308,9 @@ function StepInterests({ data, onChange, onNext, onBack }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   STEP 6 — Suggested Transit Pods
+   STEP 6 — Suggested Transit Pods (loaded from the data layer)
 ══════════════════════════════════════════════════════════════════════ */
-function StepPods({ joined, onToggle, onFinish, onBack }) {
+function StepPods({ pods, loading, loadError, onRetry, joined, onToggle, onFinish, saving }) {
   return (
     <div className="ob-step fade-in">
       <div className="ob-step__header">
@@ -324,7 +319,24 @@ function StepPods({ joined, onToggle, onFinish, onBack }) {
       </div>
 
       <div className="suggested-pods">
-        {SUGGESTED_PODS.map(pod => {
+        {loading && (
+          <p className="ob-step__sub" role="status">
+            <Loader size={14} className="spin" aria-hidden="true" /> Finding pods for you…
+          </p>
+        )}
+
+        {loadError && (
+          <div className="auth-error" role="alert">
+            <AlertCircle size={14} aria-hidden="true" /> {loadError}
+            <button className="auth-switch__link" onClick={onRetry} type="button">Try again</button>
+          </div>
+        )}
+
+        {!loading && !loadError && pods.length === 0 && (
+          <p className="ob-step__sub">No pods to suggest yet — you can create the first one from the Pods tab.</p>
+        )}
+
+        {pods.map(pod => {
           const isJoined = joined.includes(pod.id);
           return (
             <div key={pod.id} className={`suggested-pod ${isJoined ? 'suggested-pod--joined' : ''}`}>
@@ -333,11 +345,14 @@ function StepPods({ joined, onToggle, onFinish, onBack }) {
                   <p className="suggested-pod__name">{pod.name}</p>
                   <p className="suggested-pod__meta">{pod.type}</p>
                 </div>
-                <span className="suggested-pod__match">{pod.match}% match</span>
+                <span className="suggested-pod__match">
+                  {pod.match > 0 ? `${pod.match}% match` : 'Suggested'}
+                </span>
               </div>
               <div className="suggested-pod__foot">
                 <span className="suggested-pod__members">
-                  <Users size={12} aria-hidden="true" /> {pod.members} members
+                  <Users size={12} aria-hidden="true" />{' '}
+                  {pod.members === 0 ? 'Be the first to join' : `${pod.members} members`}
                 </span>
                 <button
                   className={`suggested-pod__btn ${isJoined ? 'suggested-pod__btn--joined' : ''}`}
@@ -353,16 +368,16 @@ function StepPods({ joined, onToggle, onFinish, onBack }) {
       </div>
 
       <div className="ob-finish-row">
-        <button className="ob-skip-btn" onClick={onFinish}>
+        <button className="ob-skip-btn" onClick={onFinish} disabled={saving}>
           Skip for now
         </button>
         <button
           className="ob-primary-btn ob-primary-btn--wide"
           onClick={onFinish}
-          disabled={joined.length === 0}
+          disabled={joined.length === 0 || saving}
         >
           <Zap size={16} aria-hidden="true" />
-          Start commuting
+          {saving ? 'Saving…' : 'Start commuting'}
         </button>
       </div>
     </div>
@@ -381,15 +396,45 @@ export default function Onboarding() {
   const [interests, setInterests] = useState([]);
   const [joinedPods,setJoinedPods]= useState([]);
 
-  function next() { setStep(s => Math.min(s + 1, TOTAL_STEPS)); }
-  function back() { setStep(s => Math.max(s - 1, 1));           }
+  const [suggested,    setSuggested]    = useState([]);
+  const [podsLoading,  setPodsLoading]  = useState(false);
+  const [podsError,    setPodsError]    = useState('');
+  const [saving,       setSaving]       = useState(false);
+  const [saveError,    setSaveError]    = useState('');
 
-  function finish() {
-    localStorage.setItem('rm_onboarded', 'true');
-    localStorage.setItem('rm_profile', JSON.stringify({
-      transport, route, times, interests, joinedPods,
-    }));
-    navigate('/home', { replace: true });
+  async function loadSuggestions() {
+    setPodsLoading(true);
+    setPodsError('');
+    try {
+      setSuggested(await getSuggestedPods({ transport, route, times, interests }));
+    } catch (err) {
+      setPodsError(err.message || 'Could not load pods.');
+    }
+    setPodsLoading(false);
+  }
+
+  function next() {
+    if (step === 5) loadSuggestions(); // entering the pods step
+    setStep(s => Math.min(s + 1, TOTAL_STEPS));
+  }
+  function back() { setStep(s => Math.max(s - 1, 1)); }
+
+  // Saves to the data layer (Supabase when configured, local demo otherwise).
+  // Only leaves onboarding once the save succeeded — a failure shows an error
+  // and lets the user try again instead of silently losing their answers.
+  async function finish() {
+    if (saving) return;
+    setSaving(true);
+    setSaveError('');
+    try {
+      await completeOnboarding({
+        transport, route, times, interests, joinedPodIds: joinedPods,
+      });
+      navigate('/home', { replace: true });
+    } catch (err) {
+      setSaveError(err.message || 'We could not save your profile. Please try again.');
+      setSaving(false);
+    }
   }
 
   return (
@@ -407,6 +452,7 @@ export default function Onboarding() {
         <button
           className="ob-topbar__skip"
           onClick={finish}
+          disabled={saving}
           aria-label="Skip onboarding"
         >
           Skip
@@ -416,6 +462,12 @@ export default function Onboarding() {
       <ProgressBar step={step} />
 
       <div className="ob-body">
+        {saveError && (
+          <div className="auth-error" role="alert">
+            <AlertCircle size={14} aria-hidden="true" /> {saveError}
+          </div>
+        )}
+
         {step === 1 && <StepWelcome   onNext={next} />}
         {step === 2 && <StepTransport data={transport} onChange={setTransport} onNext={next} onBack={back} />}
         {step === 3 && <StepRoute     data={route}     onChange={setRoute}     onNext={next} onBack={back} />}
@@ -423,6 +475,10 @@ export default function Onboarding() {
         {step === 5 && <StepInterests data={interests} onChange={setInterests} onNext={next} onBack={back} />}
         {step === 6 && (
           <StepPods
+            pods={suggested}
+            loading={podsLoading}
+            loadError={podsError}
+            onRetry={loadSuggestions}
             joined={joinedPods}
             onToggle={id =>
               setJoinedPods(prev =>
@@ -430,7 +486,7 @@ export default function Onboarding() {
               )
             }
             onFinish={finish}
-            onBack={back}
+            saving={saving}
           />
         )}
       </div>
