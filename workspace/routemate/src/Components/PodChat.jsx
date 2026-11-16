@@ -94,14 +94,15 @@ export default function PodChat({ pod, onClose }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typingUsers]);
 
-  const handleSend = useCallback(() => {
-    const ok = sendMessage(inputText);
+  const handleSend = useCallback(async () => {
+    const ok = await sendMessage(inputText);
     if (ok) {
       setInputText('');
       stopTyping();
       inputRef.current?.focus();
     }
   }, [inputText, sendMessage, stopTyping]);
+
 
   function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
