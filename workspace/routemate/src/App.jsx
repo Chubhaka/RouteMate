@@ -13,7 +13,7 @@ import Pods        from './Pages/Pods';
 import LiveFeed    from './Pages/LiveFeed';
 import Discover    from './Pages/Discover';
 import Safety      from './Pages/Safety';
-import CommuteInfo from './Pages/CommuteInfo';
+import Commuteinfo from './Pages/Commuteinfo';
 import Profile     from './Pages/Profile';
 import AuthSync    from './Components/Authsync';
 
