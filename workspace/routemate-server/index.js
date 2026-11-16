@@ -28,15 +28,13 @@ const PORT = process.env.PORT || 3001;
 const app    = express();
 const server = http.createServer(app);
  
+const ORIGINS = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173,http://localhost:3000')
+  .split(',').map(s => s.trim()).filter(Boolean);
+
 const io = new Server(server, {
-  cors: {
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
+  cors: { origin: ORIGINS, methods: ['GET', 'POST'], credentials: true },
 });
- 
-app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], credentials: true }));
+app.use(cors({ origin: ORIGINS, credentials: true }));
 app.use(express.json());
  
 // ── In-memory data store ──────────────────────────────────────────────────────
