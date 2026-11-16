@@ -5,7 +5,7 @@ import {
   Bus, Flag, Loader, X,
 } from 'lucide-react';
 import { getFeed, createPost, toggleLike as apiToggleLike } from '../services/api';
-import PageHeader from '../components/PageHeader';
+import PageHeader from '../Components/PageHeader';
 import '../LiveFeed.css';
 
 const TABS = [

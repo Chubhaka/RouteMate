@@ -3,8 +3,8 @@ import {
   MapPin, Coffee, BookOpen, Shield, ShoppingCart,
   Laptop, Plus, Star, Navigation, Loader, AlertCircle, X,
 } from 'lucide-react';
-import PageHeader  from '../components/PageHeader';
-import RouteMap    from '../components/RouteMap';
+import PageHeader  from '../Components/PageHeader';
+import RouteMap    from '../Components/RouteMap';
 import LocationInput from '../Components/Locationinput';
 import { getSpots, toggleSaveSpot, addSpot } from '../services/api';
 import '../Discover.css';
