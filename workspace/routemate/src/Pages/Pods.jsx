@@ -9,8 +9,8 @@ import {
   getMyPods, getDiscoverPods,
   joinPod, leavePod, createPod,
 } from '../services/api';
-import PageHeader from '../components/PageHeader';
-import PodChat from '../components/PodChat';
+import PageHeader from '../Components/PageHeader';
+import PodChat from '../Components/PodChat';
 import LocationInput from '../Components/Locationinput';
 import '../Pods.css';
 

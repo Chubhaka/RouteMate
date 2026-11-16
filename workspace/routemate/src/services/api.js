@@ -16,8 +16,8 @@
  */
 
 import { isSupabaseConfigured } from '../lib/Supabase';
-import * as remote from '../services/Supabaseapi';
-import { rankPods } from '../services/Podmatch';
+import * as remote from '../services/supabaseApi';
+import { rankPods } from '../services/podMatch';
 
 // Mock-mode only: interest tags the Supabase `pods.interest_tags` column holds for real.
 const MOCK_TAGS = { 2: ['📚 Study'], 5: ['💻 Tech', '💼 Business'] };
