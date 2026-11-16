@@ -3,8 +3,8 @@ import {
   ArrowLeft, Send, MapPin, Wifi, WifiOff,
   Users, AlertTriangle, Loader,
 } from 'lucide-react';
-import { useChat } from '../hooks/useChat';
-import '../PodChat.css';
+import { useChat } from '../hooks/Usechat';
+import '../Podchat.css';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
