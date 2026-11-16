@@ -16,8 +16,8 @@
  */
 
 import { isSupabaseConfigured } from '../lib/Supabase';
-import * as remote from '../services/supabaseApi';
-import { rankPods } from '../services/podMatch';
+import * as remote from '../services/Supabaseapi';
+import { rankPods } from '../services/Podmatch';
 
 // Mock-mode only: interest tags the Supabase `pods.interest_tags` column holds for real.
 const MOCK_TAGS = { 2: ['📚 Study'], 5: ['💻 Tech', '💼 Business'] };
@@ -436,7 +436,7 @@ export async function addSpot(spotData) {
 // With Supabase configured these are real accounts and real database rows.
 // Without it they behave like the original localStorage demo.
 
-export { syncLocalMirror, clearLocalMirror } from '../services/Supabaseapi';
+export { syncLocalMirror, clearLocalMirror } from './Supabaseapi';
 
 export async function signUp({ name, email, password }) {
   if (isSupabaseConfigured) return remote.signUp({ name, email, password });

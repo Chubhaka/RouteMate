@@ -7,7 +7,7 @@
  * backend is swapped.
  */
 import { supabase } from '../lib/Supabase';
-import { rankPods } from './podMatch';
+import { rankPods } from '../services/Podmatch';
 
 const MIRROR_KEYS = ['rm_auth', 'rm_profile', 'rm_onboarded'];
 
